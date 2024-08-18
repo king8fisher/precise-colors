@@ -1,6 +1,6 @@
 {
   "name": "precise-colors",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "description": "This library converts colors between various models without performing any rounding.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
