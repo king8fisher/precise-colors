@@ -1,4 +1,4 @@
-[![npm version](https://img.shields.io/badge/npm-precise--colors-blue?style=flat)](https://www.npmjs.com/package/precise-colors)
+[![npm version](https://img.shields.io/badge/precise--colors-CC3534?logo=npm)](https://www.npmjs.com/package/precise-colors)
 
 # precise-colors
 

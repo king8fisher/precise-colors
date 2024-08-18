@@ -1,7 +1,11 @@
 export interface Cmyk {
+  /** [0..100] */
   readonly c: number;
+  /** [0..100] */
   readonly m: number;
+  /** [0..100] */
   readonly y: number;
+  /** [0..100] */
   readonly k: number;
 }
 
@@ -12,8 +16,11 @@ export interface Apple {
 }
 
 export interface Rgb {
+  /** [0..255] */
   readonly r: number;
+  /** [0..255] */
   readonly g: number;
+  /** [0..255] */
   readonly b: number;
 }
 
