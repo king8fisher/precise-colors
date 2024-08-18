@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest --run",
-    "wtest": "vitest"
+    "wtest": "vitest",
+    "prepublishOnly": "pnpm build"
   },
   "keywords": [
     "colors",
