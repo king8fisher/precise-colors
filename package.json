@@ -1,6 +1,6 @@
 {
   "name": "precise-colors",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "This library converts colors between various models without performing any rounding.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -14,9 +14,9 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "vitest --run",
-    "wtest": "vitest",
-    "prepublishOnly": "pnpm build"
+    "lint": "eslint .",
+    "test:watch": "bun test --watch",
+    "prepublishOnly": "bun run build"
   },
   "keywords": [
     "colors",
@@ -25,11 +25,18 @@
   ],
   "author": "Anton Veretennikov (king8fisher)",
   "license": "MIT",
-  "packageManager": "pnpm@9.7.1+sha512.faf344af2d6ca65c4c5c8c2224ea77a81a5e8859cbc4e06b1511ddce2f0151512431dd19e6aff31f2c6a8f5f2aced9bd2273e1fed7dd4de1868984059d2c4247",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
-    "ts-node": "^10.9.2",
-    "tsup": "^8.2.4",
-    "typescript": "^5.5.4",
-    "vitest": "^2.0.5"
-  }
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-no-in-array": "^1.1.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1",
+    "@types/bun": "latest"
+  },
+  "type": "module",
+  "private": true
 }

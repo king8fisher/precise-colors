@@ -1,5 +1,3 @@
-import { assert } from "vitest";
-
 export function assertAlmostEquals(
   actual: number,
   expected: number,
@@ -15,7 +13,7 @@ export function assertAlmostEquals(
   }
   const msgSuffix = msg ? `: ${msg}` : ".";
   const f = (n: number) => Number.isInteger(n) ? n : n.toExponential();
-  assert.fail(`expected actual: "${f(actual)}" to be close to "${f(expected)}": \
+  throw new Error(`expected actual: "${f(actual)}" to be close to "${f(expected)}": \
 delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`
   );
 }
@@ -32,7 +30,7 @@ export function typedObjectKeys<T extends object>(obj: T): (keyof T)[] {
  * Multiply every value in the object T by `by`.
  */
 export function multiplyColor<T extends object>(obj: T, by: number): T {
-  let a: T = structuredClone(obj);
+  const a: T = structuredClone(obj);
   typedObjectKeys(obj).forEach(k => {
     if (typeof obj[k] == 'number') {
       Object.assign(a, { [k]: obj[k] * by });

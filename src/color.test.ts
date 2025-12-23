@@ -1,18 +1,26 @@
-import { assert, test } from "vitest";
+import { test, expect } from "bun:test";
 import {
   Cmyk,
+  Lab,
+  apple2rgb,
+  gray2hsl,
+  gray2hsv,
+  gray2hwb,
   hcg2rgb,
   hsl2hcg,
   hsl2hsv,
   hsl2rgb,
   hsv2rgb,
   hwb2rgb,
+  lab2lch,
+  lch2lab,
   Rgb,
   rgb2cmyk,
   rgb2hex,
   rgb2hsl,
   rgb2hwb,
   rgb2lab,
+  rgb2xyz,
   roundTo
 } from "./color";
 import { assertAlmostEquals, assertAlmostEqualsColor, multiplyColor } from "./helpers";
@@ -84,7 +92,7 @@ test("rgb -> lab", () => {
   for (let r = 0; r < 256; r++) {
     for (let g = 0; g < 256; g++) {
       for (let b = 0; b < 256; b++) {
-        const _rgb: Rgb = { r: r, g: g, b: b };
+        const _rgb: Rgb = { r, g, b }; // eslint-disable-line @typescript-eslint/no-unused-vars
         // const bRgb = xyz2rgb(xyz)
         // assertAlmostEquals(bRgb.r, rgb.r);
         // assertAlmostEquals(bRgb.g, rgb.g);
@@ -99,18 +107,18 @@ test("rgb -> lab", () => {
 });
 
 test("roundTo", () => {
-  assert.deepEqual(roundTo(10, 2), 10);
-  assert.deepEqual(roundTo(1.7777, 2), 1.78);
-  assert.deepEqual(roundTo(1.005, 2), 1.01);
-  assert.deepEqual(roundTo(1.005, 0), 1);
-  assert.deepEqual(roundTo(1.77777, 1), 1.8);
-  assert.deepEqual(roundTo(10, 1), 10);
-  assert.deepEqual(roundTo(10, 0), 10);
-  assert.deepEqual(roundTo(-10, 0), -10);
-  assert.deepEqual(roundTo(1.3549999999999998, 0), 1);
-  assert.deepEqual(roundTo(1.3549999999999998, 1), 1.4);
-  assert.deepEqual(roundTo(1.3549999999999998, 2), 1.35);
-  assert.deepEqual(roundTo(1.3549999999999998, 3), 1.355);
+  expect(roundTo(10, 2)).toBe(10);
+  expect(roundTo(1.7777, 2)).toBe(1.78);
+  expect(roundTo(1.005, 2)).toBe(1.01);
+  expect(roundTo(1.005, 0)).toBe(1);
+  expect(roundTo(1.77777, 1)).toBe(1.8);
+  expect(roundTo(10, 1)).toBe(10);
+  expect(roundTo(10, 0)).toBe(10);
+  expect(roundTo(-10, 0)).toBe(-10);
+  expect(roundTo(1.3549999999999998, 0)).toBe(1);
+  expect(roundTo(1.3549999999999998, 1)).toBe(1.4);
+  expect(roundTo(1.3549999999999998, 2)).toBe(1.35);
+  expect(roundTo(1.3549999999999998, 3)).toBe(1.355);
 });
 
 test("basics rgb -> hsl", () => {
@@ -157,8 +165,8 @@ test("rgb to all", () => {
 
 test("rgb to hex", () => {
   const rgb = { r: 169, g: 104, b: 54 };
-  assert.deepEqual(rgb2hex(rgb), "a96836");
-  assert.deepEqual(rgb2hex({ r: 0, g: 0, b: 0 }), "000000");
+  expect(rgb2hex(rgb)).toBe("a96836");
+  expect(rgb2hex({ r: 0, g: 0, b: 0 })).toBe("000000");
 });
 
 test("basics rgb -> cmyk", () => {
@@ -216,5 +224,225 @@ test("basics rgb -> cmyk", () => {
   for (const t of tests) {
     assertAlmostEqualsColor(rgb2cmyk(t[0]), multiplyColor(t[1], 100), 0.5, `${JSON.stringify(t[0])} -> ${JSON.stringify(t[1])}`);
   }
-  
+
+});
+
+test("rgb2lab - primary colors reference values", () => {
+  // Reference values from colormine.org (D65 illuminant)
+  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 0, b: 0 }), { l: 53.23, a: 80.11, b: 67.22 }, 0.1);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 255, b: 0 }), { l: 87.74, a: -86.18, b: 83.18 }, 0.1);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 255 }), { l: 32.30, a: 79.20, b: -107.86 }, 0.1);
+});
+
+test("rgb2lab - black and white reference values", () => {
+  // Note: White has minor floating-point precision error in 'a' component (~0.01)
+  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 255, b: 255 }), { l: 100, a: 0, b: 0 }, 0.02);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 0 }), { l: 0, a: 0, b: 0 }, 0.01);
+});
+
+test("rgb2lab - gray neutrality (a=0, b=0 for grays)", () => {
+  // All grayscale values should have a=0 and b=0
+  const grays = [64, 128, 192];
+  for (const g of grays) {
+    const lab = rgb2lab({ r: g, g: g, b: g });
+    assertAlmostEquals(lab.a, 0, 0.01, `Gray ${g} should have a=0`);
+    assertAlmostEquals(lab.b, 0, 0.01, `Gray ${g} should have b=0`);
+  }
+});
+
+test("rgb2lab - gamma threshold boundary (0.04045)", () => {
+  // Values near the sRGB gamma threshold (0.04045 ≈ RGB 10.31)
+  // These test the piecewise function discontinuity
+  const rgb10 = rgb2lab({ r: 10, g: 10, b: 10 }); // Below threshold
+  const rgb11 = rgb2lab({ r: 11, g: 11, b: 11 }); // Near threshold
+  const rgb12 = rgb2lab({ r: 12, g: 12, b: 12 }); // Above threshold
+
+  // Should be monotonically increasing in L
+  expect(rgb10.l < rgb11.l).toBe(true);
+  expect(rgb11.l < rgb12.l).toBe(true);
+
+  // All should remain neutral (grayscale)
+  assertAlmostEquals(rgb10.a, 0, 0.01, "rgb10 should have a=0");
+  assertAlmostEquals(rgb10.b, 0, 0.01, "rgb10 should have b=0");
+  assertAlmostEquals(rgb11.a, 0, 0.01, "rgb11 should have a=0");
+  assertAlmostEquals(rgb11.b, 0, 0.01, "rgb11 should have b=0");
+  assertAlmostEquals(rgb12.a, 0, 0.01, "rgb12 should have a=0");
+  assertAlmostEquals(rgb12.b, 0, 0.01, "rgb12 should have b=0");
+});
+
+test("rgb2xyz - primary colors (IEC 61966-2-1 sRGB)", () => {
+  // Reference: sRGB to XYZ matrix (scaled to 100)
+  // Red: X=41.24, Y=21.27, Z=1.93
+  assertAlmostEqualsColor(rgb2xyz({ r: 255, g: 0, b: 0 }), { x: 41.24, y: 21.27, z: 1.93 }, 0.1);
+  // Green: X=35.76, Y=71.52, Z=11.92
+  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 255, b: 0 }), { x: 35.76, y: 71.52, z: 11.92 }, 0.1);
+  // Blue: X=18.04, Y=7.22, Z=95.03
+  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 0, b: 255 }), { x: 18.05, y: 7.22, z: 95.03 }, 0.1);
+});
+
+test("rgb2xyz - D65 white point reference", () => {
+  // D65 standard illuminant: X=95.047, Y=100.000, Z=108.883
+  const white = rgb2xyz({ r: 255, g: 255, b: 255 });
+  assertAlmostEquals(white.x, 95.047, 0.1, "White X should match D65");
+  assertAlmostEquals(white.y, 100.0, 0.1, "White Y should be 100");
+  assertAlmostEquals(white.z, 108.883, 0.1, "White Z should match D65");
+});
+
+test("rgb2hsl - near-equal RGB values (floating-point equality)", () => {
+  // Test values that are nearly equal but differ at floating-point precision
+  // This tests the == comparison in rgb2hsl lines 371-389
+  const nearGray1 = rgb2hsl({ r: 127.9999999999999, g: 128.0000000000001, b: 128 });
+  const nearGray2 = rgb2hsl({ r: 100, g: 100.00000000000001, b: 100 });
+
+  // Should be treated as gray (s should be 0 or very small)
+  expect(nearGray1.s < 1).toBe(true);
+  expect(nearGray2.s < 1).toBe(true);
+
+  // Should not produce NaN
+  expect(isNaN(nearGray1.h)).toBe(false);
+  expect(isNaN(nearGray1.s)).toBe(false);
+  expect(isNaN(nearGray1.l)).toBe(false);
+});
+
+test("rgb2hsl - classic floating-point issue (0.1 + 0.2 !== 0.3)", () => {
+  // 0.1 + 0.2 = 0.30000000000000004 in JavaScript
+  const sum = 0.1 + 0.2;
+  const rgb = { r: sum * 255, g: 0.3 * 255, b: 0.3 * 255 };
+  const hsl = rgb2hsl(rgb);
+
+  // Should not produce NaN or Infinity
+  expect(Number.isFinite(hsl.h)).toBe(true);
+  expect(Number.isFinite(hsl.s)).toBe(true);
+  expect(Number.isFinite(hsl.l)).toBe(true);
+});
+
+test("hsl2hsv - division edge cases", () => {
+  // Black: l=0, s=0 (potential division by zero)
+  const black = hsl2hsv({ h: 0, s: 0, l: 0 });
+  expect(isNaN(black.h)).toBe(false);
+  expect(isNaN(black.s)).toBe(false);
+  expect(isNaN(black.v)).toBe(false);
+  assertAlmostEquals(black.v, 0, 0.01, "Black should have v=0");
+
+  // White: l=100, s=0 (potential division by zero)
+  const white = hsl2hsv({ h: 0, s: 0, l: 100 });
+  expect(isNaN(white.h)).toBe(false);
+  expect(isNaN(white.s)).toBe(false);
+  expect(isNaN(white.v)).toBe(false);
+  assertAlmostEquals(white.v, 100, 0.01, "White should have v=100");
+
+  // Pure gray at 50%
+  const gray = hsl2hsv({ h: 180, s: 0, l: 50 });
+  expect(isNaN(gray.h)).toBe(false);
+  expect(isNaN(gray.s)).toBe(false);
+  expect(isNaN(gray.v)).toBe(false);
+  assertAlmostEquals(gray.s, 0, 0.01, "Gray should have s=0");
+});
+
+test("hsl2hsv - boundary conditions", () => {
+  // Full saturation at l=0 (black with saturation - edge case)
+  const hsv1 = hsl2hsv({ h: 360, s: 100, l: 0 });
+  expect(Number.isFinite(hsv1.v)).toBe(true);
+
+  // Full saturation at l=100 (white with saturation - edge case)
+  const hsv2 = hsl2hsv({ h: 360, s: 100, l: 100 });
+  expect(Number.isFinite(hsv2.v)).toBe(true);
+});
+
+test("gray conversions - consistency across color spaces", () => {
+  const grayLevels = [0, 25, 50, 75, 100];
+
+  for (const gray of grayLevels) {
+    const expectedRgbValue = (gray / 100) * 255;
+
+    // gray -> hsl -> rgb
+    const fromHsl = hsl2rgb(gray2hsl(gray));
+    assertAlmostEquals(fromHsl.r, expectedRgbValue, 0.01, `gray ${gray} via HSL: r`);
+    assertAlmostEquals(fromHsl.g, expectedRgbValue, 0.01, `gray ${gray} via HSL: g`);
+    assertAlmostEquals(fromHsl.b, expectedRgbValue, 0.01, `gray ${gray} via HSL: b`);
+
+    // gray -> hsv -> rgb
+    const fromHsv = hsv2rgb(gray2hsv(gray));
+    assertAlmostEquals(fromHsv.r, expectedRgbValue, 0.01, `gray ${gray} via HSV: r`);
+    assertAlmostEquals(fromHsv.g, expectedRgbValue, 0.01, `gray ${gray} via HSV: g`);
+    assertAlmostEquals(fromHsv.b, expectedRgbValue, 0.01, `gray ${gray} via HSV: b`);
+
+    // gray -> hwb -> rgb
+    const fromHwb = hwb2rgb(gray2hwb(gray));
+    assertAlmostEquals(fromHwb.r, expectedRgbValue, 0.01, `gray ${gray} via HWB: r`);
+    assertAlmostEquals(fromHwb.g, expectedRgbValue, 0.01, `gray ${gray} via HWB: g`);
+    assertAlmostEquals(fromHwb.b, expectedRgbValue, 0.01, `gray ${gray} via HWB: b`);
+  }
+});
+
+test("lab -> lch -> lab round-trip", () => {
+  const lValues = [0, 25, 50, 75, 100];
+  const abValues = [-100, -50, 0, 50, 100];
+
+  for (const l of lValues) {
+    for (const a of abValues) {
+      for (const b of abValues) {
+        const lab: Lab = { l, a, b };
+        const lch = lab2lch(lab);
+        const back = lch2lab(lch);
+
+        assertAlmostEquals(back.l, lab.l, 1e-6, `L round-trip failed for lab(${l},${a},${b})`);
+        assertAlmostEquals(back.a, lab.a, 1e-6, `a round-trip failed for lab(${l},${a},${b})`);
+        assertAlmostEquals(back.b, lab.b, 1e-6, `b round-trip failed for lab(${l},${a},${b})`);
+      }
+    }
+  }
+});
+
+test("lch hue edge cases", () => {
+  // When a=0 and b=0, hue is undefined (achromatic)
+  const achromatic = lab2lch({ l: 50, a: 0, b: 0 });
+  expect(Number.isFinite(achromatic.h)).toBe(true);
+  assertAlmostEquals(achromatic.c, 0, 1e-6, "Achromatic chroma should be 0");
+
+  // Hue at 0 degrees (positive a, zero b)
+  const hue0 = lab2lch({ l: 50, a: 50, b: 0 });
+  assertAlmostEquals(hue0.h, 0, 0.01, "Hue should be 0 for positive a, zero b");
+
+  // Hue at 90 degrees (zero a, positive b)
+  const hue90 = lab2lch({ l: 50, a: 0, b: 50 });
+  assertAlmostEquals(hue90.h, 90, 0.01, "Hue should be 90 for zero a, positive b");
+
+  // Hue at 180 degrees (negative a, zero b)
+  const hue180 = lab2lch({ l: 50, a: -50, b: 0 });
+  assertAlmostEquals(hue180.h, 180, 0.01, "Hue should be 180 for negative a, zero b");
+
+  // Hue at 270 degrees (zero a, negative b)
+  const hue270 = lab2lch({ l: 50, a: 0, b: -50 });
+  assertAlmostEquals(hue270.h, 270, 0.01, "Hue should be 270 for zero a, negative b");
+});
+
+test("apple2rgb - 16-bit to 8-bit precision", () => {
+  // Mid-gray: 32768 / 65535 * 255 ≈ 127.5
+  const midGray = apple2rgb({ r16: 32768, g16: 32768, b16: 32768 });
+  assertAlmostEquals(midGray.r, 127.5, 0.5, "Mid-gray r");
+  assertAlmostEquals(midGray.g, 127.5, 0.5, "Mid-gray g");
+  assertAlmostEquals(midGray.b, 127.5, 0.5, "Mid-gray b");
+
+  // Near-black: 1 / 65535 * 255 ≈ 0.00389
+  const nearBlack = apple2rgb({ r16: 1, g16: 1, b16: 1 });
+  expect(nearBlack.r < 0.01).toBe(true);
+
+  // One 8-bit step: 257 / 65535 * 255 ≈ 1.0
+  const oneStep = apple2rgb({ r16: 257, g16: 257, b16: 257 });
+  assertAlmostEquals(oneStep.r, 1.0, 0.01, "257/65535*255 should be ~1");
+});
+
+test("apple2rgb - edge values", () => {
+  // Black
+  const black = apple2rgb({ r16: 0, g16: 0, b16: 0 });
+  assertAlmostEquals(black.r, 0, 0.001, "Black r");
+  assertAlmostEquals(black.g, 0, 0.001, "Black g");
+  assertAlmostEquals(black.b, 0, 0.001, "Black b");
+
+  // White
+  const white = apple2rgb({ r16: 65535, g16: 65535, b16: 65535 });
+  assertAlmostEquals(white.r, 255, 0.001, "White r");
+  assertAlmostEquals(white.g, 255, 0.001, "White g");
+  assertAlmostEquals(white.b, 255, 0.001, "White b");
 });

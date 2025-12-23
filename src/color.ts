@@ -43,8 +43,11 @@ export interface Hcg {
 }
 
 export interface Hwb {
+  /** Hue [0..360] */
   readonly h: number;
+  /** Whiteness [0..100] */
   readonly w: number;
+  /** Blackness [0..100] */
   readonly b: number;
 }
 
@@ -602,8 +605,8 @@ export function gray2hsv(gray: number): Hsv {
 export function gray2hwb(gray: number): Hwb {
   return {
     h: 0,
-    w: 100,
-    b: gray,
+    w: gray,
+    b: 100 - gray,
   };
 }
 
