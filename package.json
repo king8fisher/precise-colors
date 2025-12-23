@@ -1,6 +1,6 @@
 {
   "name": "precise-colors",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "private": false,
   "description": "This library converts colors between various models without performing any rounding.",
   "main": "./dist/index.js",
@@ -32,7 +32,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
-    "eslint-plugin-no-in-array": "^1.1.0",
+    "eslint-plugin-no-in-array": "^1.2.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1",
