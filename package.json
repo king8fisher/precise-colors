@@ -1,6 +1,7 @@
 {
   "name": "precise-colors",
   "version": "0.9.6",
+  "private": false,
   "description": "This library converts colors between various models without performing any rounding.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -37,6 +38,5 @@
     "typescript-eslint": "^8.50.1",
     "@types/bun": "latest"
   },
-  "type": "module",
-  "private": true
+  "type": "module"
 }
