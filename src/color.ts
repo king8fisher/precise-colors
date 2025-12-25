@@ -1,146 +1,288 @@
+/**
+ * CMYK color model (Cyan, Magenta, Yellow, Key/Black).
+ * @property {number} c - Cyan `[0..100]`
+ * @property {number} m - Magenta `[0..100]`
+ * @property {number} y - Yellow `[0..100]`
+ * @property {number} k - Key/Black `[0..100]`
+ * @see {@link https://en.wikipedia.org/wiki/CMYK_color_model|Wikipedia}
+ */
 export interface Cmyk {
-  /** [0..100] */
+  /** Cyan `[0..100]` */
   readonly c: number;
-  /** [0..100] */
+  /** Magenta `[0..100]` */
   readonly m: number;
-  /** [0..100] */
+  /** Yellow `[0..100]` */
   readonly y: number;
-  /** [0..100] */
+  /** Key/Black `[0..100]` */
   readonly k: number;
 }
 
+/**
+ * Apple 16-bit RGB color.
+ * @property {number} r16 - Red `[0..65535]`
+ * @property {number} g16 - Green `[0..65535]`
+ * @property {number} b16 - Blue `[0..65535]`
+ * @see {@link https://developer.apple.com/library/archive/documentation/LanguagesUtilities/Conceptual/MacAutomationScriptingGuide/ConvertRGBtoHTMLColor.html|Apple RGB}
+ */
 export interface Apple {
+  /** Red `[0..65535]` */
   readonly r16: number;
+  /** Green `[0..65535]` */
   readonly g16: number;
+  /** Blue `[0..65535]` */
   readonly b16: number;
 }
 
+/**
+ * sRGB color model (8-bit per channel).
+ * @property {number} r - Red `[0..255]`
+ * @property {number} g - Green `[0..255]`
+ * @property {number} b - Blue `[0..255]`
+ * @see {@link https://www.color.org/srgb.pdf|ICC sRGB Specification}
+ */
 export interface Rgb {
-  /** [0..255] */
+  /** Red `[0..255]` */
   readonly r: number;
-  /** [0..255] */
+  /** Green `[0..255]` */
   readonly g: number;
-  /** [0..255] */
+  /** Blue `[0..255]` */
   readonly b: number;
 }
 
+/**
+ * HSL cylindrical color model (Hue, Saturation, Lightness).
+ * @property {number} h - Hue `[0..360]`
+ * @property {number} s - Saturation `[0..100]`
+ * @property {number} l - Lightness `[0..100]`
+ * @see {@link https://www.w3.org/TR/css-color-4/#the-hsl-notation|W3C CSS Color 4}
+ */
 export interface Hsl {
+  /** Hue angle `[0..360]` */
   readonly h: number;
+  /** Saturation `[0..100]` */
   readonly s: number;
+  /** Lightness `[0..100]` */
   readonly l: number;
 }
 
+/**
+ * HSV/HSB cylindrical color model (Hue, Saturation, Value/Brightness).
+ * @property {number} h - Hue `[0..360]`
+ * @property {number} s - Saturation `[0..100]`
+ * @property {number} v - Value `[0..100]`
+ * @see {@link https://en.wikipedia.org/wiki/HSL_and_HSV|Wikipedia}
+ */
 export interface Hsv {
+  /** Hue angle `[0..360]` */
   readonly h: number;
+  /** Saturation `[0..100]` */
   readonly s: number;
+  /** Value/Brightness `[0..100]` */
   readonly v: number;
 }
 
+/**
+ * HCG color model (Hue, Chroma, Grayness).
+ * Derived from the Munsell color system.
+ * @property {number} h - Hue `[0..360]`
+ * @property {number} c - Chroma `[0..100]`
+ * @property {number} g - Grayness `[0..100]`
+ * @see {@link https://github.com/d3/d3-hcg|d3-hcg}
+ */
 export interface Hcg {
+  /** Hue angle `[0..360]` */
   readonly h: number;
+  /** Chroma `[0..100]` */
   readonly c: number;
+  /** Grayness `[0..100]` */
   readonly g: number;
 }
 
+/**
+ * HWB color model (Hue, Whiteness, Blackness).
+ * @property {number} h - Hue `[0..360]`
+ * @property {number} w - Whiteness `[0..100]`
+ * @property {number} b - Blackness `[0..100]`
+ * @see {@link https://www.w3.org/TR/css-color-4/#the-hwb-notation|W3C CSS Color 4}
+ */
 export interface Hwb {
-  /** Hue [0..360] */
+  /** Hue angle `[0..360]` */
   readonly h: number;
-  /** Whiteness [0..100] */
+  /** Whiteness `[0..100]` */
   readonly w: number;
-  /** Blackness [0..100] */
+  /** Blackness `[0..100]` */
   readonly b: number;
 }
 
+/**
+ * CIE L*a*b* perceptual color space (1976).
+ * a* and b* are theoretically unbounded but clamped to `[-128..127]` for 8-bit storage.
+ * @property {number} l - Lightness `[0..100]`
+ * @property {number} a - Green-Red axis `[-128..127]`
+ * @property {number} b - Blue-Yellow axis `[-128..127]`
+ * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space|Wikipedia}
+ * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ */
 export interface Lab {
+  /** Lightness `[0..100]` */
   readonly l: number;
+  /** Green (-) to Red (+) axis. Clamped `[-128..127]`, theoretical `~[-430..+172]` */
   readonly a: number;
+  /** Blue (-) to Yellow (+) axis. Clamped `[-128..127]`, theoretically unbounded */
   readonly b: number;
 }
 
+/**
+ * CIE XYZ tristimulus color space with D65 illuminant.
+ * @property {number} x - X tristimulus `[0..95.047]`
+ * @property {number} y - Y luminance `[0..100]`
+ * @property {number} z - Z tristimulus `[0..108.883]`
+ * @see {@link https://en.wikipedia.org/wiki/CIE_1931_color_space|Wikipedia CIE 1931}
+ * @see {@link https://en.wikipedia.org/wiki/Standard_illuminant#Illuminant_series_D|D65 Illuminant}
+ */
 export interface Xyz {
+  /** X tristimulus `[0..95.047]` for D65 white */
   readonly x: number;
+  /** Y tristimulus (luminance) `[0..100]` */
   readonly y: number;
+  /** Z tristimulus `[0..108.883]` for D65 white */
   readonly z: number;
 }
 
+/**
+ * XYZ values from Lab conversion (named Lyz to avoid confusion).
+ * Uses D65 illuminant reference white.
+ * @property {number} l - X tristimulus `[0..95.047]`
+ * @property {number} y - Y luminance `[0..100]`
+ * @property {number} z - Z tristimulus `[0..108.883]`
+ * @see {@link https://en.wikipedia.org/wiki/Standard_illuminant#Illuminant_series_D|D65 Illuminant}
+ */
 export interface Lyz {
+  /** X tristimulus `[0..95.047]` for D65 */
   readonly l: number;
+  /** Y tristimulus `[0..100]` */
   readonly y: number;
+  /** Z tristimulus `[0..108.883]` for D65 */
   readonly z: number;
 }
 
+/**
+ * CIE LCH cylindrical color space (Lightness, Chroma, Hue).
+ * Polar representation of L*a*b*.
+ * @property {number} l - Lightness `[0..100]`
+ * @property {number} c - Chroma `[0..~230]`
+ * @property {number} h - Hue `[0..360]`
+ * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_model|Wikipedia}
+ * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ */
 export interface Lch {
+  /** Lightness `[0..100]` */
   readonly l: number;
+  /** Chroma `[0..~230]`. Theoretically unbounded, sRGB max ~131 */
   readonly c: number;
+  /** Hue angle `[0..360]` */
   readonly h: number;
 }
 
-/** rounds number to amount of places after `.` */
+/**
+ * Rounds a number to specified decimal places.
+ * Uses exponential notation to avoid floating-point errors
+ * (e.g., `1.005 * 100 = 100.49999...` but `roundTo(1.005, 2) = 1.01`).
+ * @param num - Number to round
+ * @param places - Decimal places `[0..]`
+ * @returns Rounded number
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed|Number.toFixed} for string output
+ */
 export function roundTo(num: number, places: number) {
   return +(Math.round(parseFloat(num.toString() + "e+" + places)) + "e-" +
     places);
 }
 
+/**
+ * Modulo operation that always returns positive result.
+ * @param x - Dividend
+ * @param n - Divisor
+ * @returns `x mod n`, always positive
+ */
 export function modulo(x: number, n: number): number {
   return ((x % n) + n) % n;
 }
 
 /**
- * rgb2css converts {@link Rgb} to a string for css. Calls `Math.round` for each of
- * the Rgb fields.
- * @param {Rbg} rgb - [0..255].
- * @returns {string} `"rgb(r,g,b)"` representation of passed {@link Rgb} instance.
+ * Converts {@link Rgb} to CSS rgb() string.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns CSS string `"rgb(r,g,b)"` (rounded)
  */
 export function rgb2css(rgb: Rgb): string {
   return `rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
 }
 
 /**
- * rgb2str converts {@link Rgb} to a rounded `"0..255,0.255,0.255"` string.
- * @param {Rgb} rgb
- * @returns {string} example: `"0,127,255"`
+ * Converts {@link Rgb} to comma-separated string.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns String `"r,g,b"` (rounded)
  */
 export function rgb2str(rgb: Rgb): string {
   return `${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)}`;
 }
 
 /**
- * Converts {@link Rgb} and `alpha` to a string for css. Calls `Math.round` for each of
- * the Rgb fields. Rounds `alpha` to max 2 places after `.`.
- * @param {Rbg} rgb - [0..255].
- * @param {number} alpha [0..1]
- * @returns {string} `"rgb(r,g,b,a)"` representation of passed  {@link Rgb} instance and `alpha`.
+ * Converts {@link Rgb} and alpha to CSS rgba() string.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @param alpha - Alpha `[0..1]`
+ * @returns CSS string `"rgba(r,g,b,a)"` (rounded)
  */
 export function rgba2css(rgb: Rgb, alpha: number): string {
   return `rgba(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)},${roundTo(alpha, 2)
     })`;
 }
 
-/** returns `hsl(h,s,l)` expression */
+/**
+ * Converts {@link Hsl} to CSS hsl() string.
+ * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns CSS string `"hsl(hdeg,s%,l%)"` (rounded to 2 decimals)
+ */
 export function hsl2css(hsl: Hsl) {
   return `hsl(${roundTo(hsl.h, 2)}deg,${roundTo(hsl.s, 2)}%,${roundTo(hsl.l, 2)
     }%)`;
 }
 
-/** returns `hwb(h,w,b)` expression */
+/**
+ * Converts {@link Hwb} to CSS hwb() string.
+ * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @returns CSS string `"hwb(hdeg,w%,b%)"` (rounded to 2 decimals)
+ */
 export function hwb2css(hwb: Hwb) {
   return `hwb(${roundTo(hwb.h, 2)}deg,${roundTo(hwb.w, 2)}%,${roundTo(hwb.b, 2)
     }%)`;
 }
 
-/** rgb expects [0..255] for each field */
+/**
+ * Converts {@link Rgb} to 6-digit hex string (without #).
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns Hex string `"rrggbb"` (rounded)
+ */
 export function rgb2hex(rgb: Rgb): string {
   return Math.round(rgb.r).toString(16).padStart(2, "0") +
     Math.round(rgb.g).toString(16).padStart(2, "0") +
     Math.round(rgb.b).toString(16).padStart(2, "0");
 }
 
-/** gray expects [0..100] */
+/**
+ * Converts gray value to 6-digit hex string.
+ * @param gray - Gray level `[0..100]`
+ * @returns Hex string `"gggggg"` (rounded)
+ */
 export function gray2hex(gray: number): string {
   const p = Math.round((gray / 100) * 255).toString(16).padStart(2, "0");
   return p + p + p;
 }
 
+/**
+ * Parses hex string to {@link Rgb}.
+ * @param input - Hex string (6 digits, without #)
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
 export function hex2rgb(input: string): Rgb {
   const value: number = parseInt(input, 16);
   if (isNaN(value)) {
@@ -153,7 +295,11 @@ export function hex2rgb(input: string): Rgb {
   };
 }
 
-/** expects h [0..360], s [0..100], l [0..100]. Returns rgb[0..255], doesn't perform Math.round on the result. */
+/**
+ * Converts {@link Hsl} to {@link Rgb}.
+ * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ */
 export function hsl2rgb(hsl: Hsl): Rgb {
   const h = hsl.h / 360;
   const s = hsl.s / 100;
@@ -198,7 +344,11 @@ export function hsl2rgb(hsl: Hsl): Rgb {
   };
 }
 
-/** expects h [0..360], s [0..100], l [0..100]. Returns rgb[0..255], doesn't perform Math.round on the result. */
+/**
+ * Converts {@link Hsl} to {@link Hsv}.
+ * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ */
 export function hsl2hsv(hsl: Hsl): Hsv {
   let s = hsl.s / 100;
   let l = hsl.l / 100;
@@ -229,6 +379,11 @@ export function hsl2hsv(hsl: Hsl): Hsv {
   };
 }
 
+/**
+ * Converts {@link Hsl} to {@link Hcg}.
+ * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ */
 export function hsl2hcg(hsl: Hsl): Hcg {
   const s = hsl.s / 100;
   const l = hsl.l / 100;
@@ -249,6 +404,11 @@ export function hsl2hcg(hsl: Hsl): Hcg {
   };
 }
 
+/**
+ * Converts {@link Hsv} to {@link Rgb}.
+ * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ */
 export function hsv2rgb(hsv: Hsv): Rgb {
   const h = hsv.h / 60;
   const s = hsv.s / 100;
@@ -277,6 +437,11 @@ export function hsv2rgb(hsv: Hsv): Rgb {
   }
 }
 
+/**
+ * Converts {@link Hsv} to {@link Hsl}.
+ * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ */
 export function hsv2hsl(hsv: Hsv): Hsl {
   const s = hsv.s / 100;
   const v = hsv.v / 100;
@@ -304,6 +469,11 @@ export function hsv2hsl(hsv: Hsv): Hsl {
   };
 }
 
+/**
+ * Converts {@link Hsv} to {@link Hcg}.
+ * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ */
 export function hsv2hcg(hsv: Hsv): Hcg {
   const s = hsv.s / 100;
   const v = hsv.v / 100;
@@ -319,6 +489,11 @@ export function hsv2hcg(hsv: Hsv): Hcg {
   };
 }
 
+/**
+ * Converts {@link Apple} 16-bit RGB to 8-bit {@link Rgb}.
+ * @param rgb16 - {@link Apple} color, r16/g16/b16 `[0..65535]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
 export function apple2rgb(rgb16: Apple): Rgb {
   return {
     r: (rgb16.r16 / 65535) * 255,
@@ -327,6 +502,11 @@ export function apple2rgb(rgb16: Apple): Rgb {
   };
 }
 
+/**
+ * Converts {@link Cmyk} to {@link Rgb}.
+ * @param cmyk - {@link Cmyk} color, c/m/y/k `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
 export function cmyk2rgb(cmyk: Cmyk): Rgb {
   const c = cmyk.c / 100;
   const m = cmyk.m / 100;
@@ -344,6 +524,11 @@ export function cmyk2rgb(cmyk: Cmyk): Rgb {
   };
 }
 
+/**
+ * Converts {@link Rgb} to {@link Cmyk}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link Cmyk} color, c/m/y/k `[0..100]`
+ */
 export function rgb2cmyk(rgb: Rgb): Cmyk {
   const r = rgb.r / 255;
   const g = rgb.g / 255;
@@ -357,6 +542,11 @@ export function rgb2cmyk(rgb: Rgb): Cmyk {
   };
 }
 
+/**
+ * Converts {@link Rgb} to {@link Hsl}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ */
 export function rgb2hsl(rgb: Rgb): Hsl {
   const r = rgb.r / 255;
   const g = rgb.g / 255;
@@ -400,6 +590,11 @@ export function rgb2hsl(rgb: Rgb): Hsl {
   return { h: h, s: s * 100, l: l * 100 };
 }
 
+/**
+ * Converts {@link Rgb} to {@link Hwb}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ */
 export function rgb2hwb(rgb: Rgb): Hwb {
   const h = rgb2hsl(rgb).h;
   const w = 1.0 / 255.0 * Math.min(rgb.r, Math.min(rgb.g, rgb.b));
@@ -408,6 +603,11 @@ export function rgb2hwb(rgb: Rgb): Hwb {
   return { h: h, w: w * 100, b: b * 100 };
 }
 
+/**
+ * Converts {@link Hwb} to {@link Rgb}.
+ * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ */
 export function hwb2rgb(hwb: Hwb): Rgb {
   const h = hwb.h / 360;
   let w = hwb.w / 100;
@@ -467,6 +667,11 @@ export function hwb2rgb(hwb: Hwb): Rgb {
   }
 }
 
+/**
+ * Converts {@link Hwb} to {@link Hcg}.
+ * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ */
 export function hwb2hcg(hwb: Hwb): Hcg {
   const w = hwb.w / 100;
   const b = hwb.b / 100;
@@ -483,6 +688,11 @@ export function hwb2hcg(hwb: Hwb): Hcg {
   };
 }
 
+/**
+ * Converts {@link Hcg} to {@link Rgb}.
+ * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ */
 export function hcg2rgb(hcg: Hcg): Rgb {
   const h = hcg.h / 360;
   const c = hcg.c / 100;
@@ -535,6 +745,11 @@ export function hcg2rgb(hcg: Hcg): Rgb {
   };
 }
 
+/**
+ * Converts {@link Hcg} to {@link Hsv}.
+ * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ */
 export function hcg2hsv(hcg: Hcg): Hsv {
   const c = hcg.c / 100;
   const g = hcg.g / 100;
@@ -550,6 +765,11 @@ export function hcg2hsv(hcg: Hcg): Hsv {
   };
 }
 
+/**
+ * Converts {@link Hcg} to {@link Hsl}.
+ * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ */
 export function hcg2hsl(hcg: Hcg): Hsl {
   const c = hcg.c / 100;
   const g = hcg.g / 100;
@@ -567,6 +787,11 @@ export function hcg2hsl(hcg: Hcg): Hsl {
   };
 }
 
+/**
+ * Converts {@link Hcg} to {@link Hwb}.
+ * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ */
 export function hcg2hwb(hcg: Hcg): Hwb {
   const c = hcg.c / 100;
   const g = hcg.g / 100;
@@ -578,6 +803,11 @@ export function hcg2hwb(hcg: Hcg): Hwb {
   };
 }
 
+/**
+ * Converts gray to {@link Rgb}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
 export function gray2rgb(gray: number): Rgb {
   return {
     r: (gray / 100) * 255,
@@ -586,6 +816,11 @@ export function gray2rgb(gray: number): Rgb {
   };
 }
 
+/**
+ * Converts gray to {@link Hsl}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Hsl} color, h=0, s=0, l=gray
+ */
 export function gray2hsl(gray: number): Hsl {
   return {
     h: 0,
@@ -594,6 +829,11 @@ export function gray2hsl(gray: number): Hsl {
   };
 }
 
+/**
+ * Converts gray to {@link Hsv}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Hsv} color, h=0, s=0, v=gray
+ */
 export function gray2hsv(gray: number): Hsv {
   return {
     h: 0,
@@ -602,6 +842,11 @@ export function gray2hsv(gray: number): Hsv {
   };
 }
 
+/**
+ * Converts gray to {@link Hwb}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Hwb} color, h=0, w=gray, b=100-gray
+ */
 export function gray2hwb(gray: number): Hwb {
   return {
     h: 0,
@@ -610,6 +855,11 @@ export function gray2hwb(gray: number): Hwb {
   };
 }
 
+/**
+ * Converts gray to {@link Cmyk}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Cmyk} color, c=0, m=0, y=0, k=gray
+ */
 export function gray2cmyk(gray: number): Cmyk {
   return {
     c: 0,
@@ -619,6 +869,11 @@ export function gray2cmyk(gray: number): Cmyk {
   };
 }
 
+/**
+ * Converts gray to {@link Lab}.
+ * @param gray - Gray level `[0..100]`
+ * @returns {@link Lab} color, l=gray, a=0, b=0
+ */
 export function gray2lab(gray: number): Lab {
   return {
     l: gray,
@@ -627,59 +882,88 @@ export function gray2lab(gray: number): Lab {
   };
 }
 
+/**
+ * CIE Lab constants (exact rational values per CIE 15.3 standard).
+ * Using these exact values ensures function continuity at the threshold.
+ * @see {@link http://www.brucelindbloom.com/LContinuity.html|Bruce Lindbloom Continuity Study}
+ */
+const CIE_E = 216 / 24389;   // ε (epsilon) ≈ 0.008856451679
+const CIE_K = 24389 / 27;    // κ (kappa) ≈ 903.2962962963
+
+/**
+ * sRGB to XYZ transformation matrix (IEC 61966-2-1, D65 illuminant).
+ * Higher precision than 4-digit approximations.
+ */
+const SRGB_TO_XYZ = {
+  xr: 0.4124564, xg: 0.3575761, xb: 0.1804375,
+  yr: 0.2126729, yg: 0.7151522, yb: 0.0721750,
+  zr: 0.0193339, zg: 0.1191920, zb: 0.9503041,
+};
+
+/**
+ * D65 white point tristimulus values.
+ */
+const D65: Xyz = { x: 95.047, y: 100, z: 108.883 };
+
+/**
+ * Converts {@link Rgb} to {@link Lab}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ */
 export function rgb2lab(rgb: Rgb): Lab {
   let r = rgb.r / 255,
     g = rgb.g / 255,
     b = rgb.b / 255;
-  let x = 0, y = 0, z = 0;
 
+  // sRGB gamma decoding
   r = (r > 0.04045) ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
   g = (g > 0.04045) ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
   b = (b > 0.04045) ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
 
-  x = (r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047;
-  y = (r * 0.2126 + g * 0.7152 + b * 0.0722) / 1.00000;
-  z = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
+  // RGB to XYZ using IEC matrix, normalized by D65 white point
+  let x = (r * SRGB_TO_XYZ.xr + g * SRGB_TO_XYZ.xg + b * SRGB_TO_XYZ.xb) / (D65.x / 100);
+  let y = (r * SRGB_TO_XYZ.yr + g * SRGB_TO_XYZ.yg + b * SRGB_TO_XYZ.yb) / (D65.y / 100);
+  let z = (r * SRGB_TO_XYZ.zr + g * SRGB_TO_XYZ.zg + b * SRGB_TO_XYZ.zb) / (D65.z / 100);
 
-  x = (x > 0.008856) ? Math.pow(x, 1 / 3) : (7.787 * x) + 16 / 116;
-  y = (y > 0.008856) ? Math.pow(y, 1 / 3) : (7.787 * y) + 16 / 116;
-  z = (z > 0.008856) ? Math.pow(z, 1 / 3) : (7.787 * z) + 16 / 116;
+  // XYZ to Lab using CIE exact constants
+  x = (x > CIE_E) ? Math.pow(x, 1 / 3) : (CIE_K * x + 16) / 116;
+  y = (y > CIE_E) ? Math.pow(y, 1 / 3) : (CIE_K * y + 16) / 116;
+  z = (z > CIE_E) ? Math.pow(z, 1 / 3) : (CIE_K * z + 16) / 116;
 
   return { l: (116 * y) - 16, a: 500 * (x - y), b: 200 * (y - z) };
 }
 
+/**
+ * Converts {@link Lab} to {@link Lyz} (XYZ values).
+ * @param lab - {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns {@link Lyz} color, l `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ */
 export function lab2lyz(lab: Lab): Lyz {
   let y = (lab.l + 16) / 116;
   let x = lab.a / 500 + y;
   let z = y - lab.b / 200;
-  const x2: number = Math.pow(x, 3);
-  const y2: number = Math.pow(y, 3);
-  const z2: number = Math.pow(z, 3);
-  if (x2 > 0.008856) {
-    x = x2;
-  } else {
-    x = (x - 16.0 / 116.0) / 7.787;
-  }
-  if (y2 > 0.008856) {
-    y = y2;
-  } else {
-    y = (y - 16.0 / 116.0) / 7.787;
-  }
-  if (z2 > 0.008856) {
-    z = z2;
-  } else {
-    z = (z - 16.0 / 116.0) / 7.787;
-  }
-  x *= 95.047;
-  y *= 100;
-  z *= 108.883;
+
+  const x3 = Math.pow(x, 3);
+  const y3 = Math.pow(y, 3);
+  const z3 = Math.pow(z, 3);
+
+  // Lab to XYZ using CIE exact constants
+  x = (x3 > CIE_E) ? x3 : (116 * x - 16) / CIE_K;
+  y = (y3 > CIE_E) ? y3 : (116 * y - 16) / CIE_K;
+  z = (z3 > CIE_E) ? z3 : (116 * z - 16) / CIE_K;
+
   return {
-    l: x,
-    y: y,
-    z: z,
+    l: x * D65.x,
+    y: y * D65.y,
+    z: z * D65.z,
   };
 }
 
+/**
+ * Converts {@link Lab} to {@link Lch}.
+ * @param lab - {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ */
 export function lab2lch(lab: Lab): Lch {
   let h: number;
   const hr: number = Math.atan2(lab.b, lab.a);
@@ -695,6 +979,11 @@ export function lab2lch(lab: Lab): Lch {
   };
 }
 
+/**
+ * Converts {@link Lch} to {@link Lab}.
+ * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ */
 export function lch2lab(lch: Lch): Lab {
   const hr: number = lch.h / 360.0 * 2 * Math.PI;
   const a: number = lch.c * Math.cos(hr);
@@ -706,6 +995,11 @@ export function lch2lab(lch: Lch): Lab {
   };
 }
 
+/**
+ * Converts {@link Xyz} to {@link Rgb}.
+ * @param xyz - {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
 export function xyz2rgb(xyz: Xyz): Rgb {
   const x = xyz.x / 100;
   const y = xyz.y / 100;
@@ -739,25 +1033,21 @@ export function xyz2rgb(xyz: Xyz): Rgb {
   };
 }
 
+/**
+ * Converts {@link Xyz} to {@link Lab}.
+ * @param xyz - {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ */
 export function xyz2lab(xyz: Xyz): Lab {
-  let x = xyz.x / 95.047;
-  let y = xyz.y / 100;
-  let z = xyz.z / 108.883;
-  if (x > 0.008856) {
-    x = Math.pow(x, 1.0 / 3.0);
-  } else {
-    x = (7.787 * x) + (16.0 / 116.0);
-  }
-  if (y > 0.008856) {
-    y = Math.pow(y, 1.0 / 3.0);
-  } else {
-    y = (7.787 * y) + (16.0 / 116.0);
-  }
-  if (z > 0.008856) {
-    z = Math.pow(z, 1.0 / 3.0);
-  } else {
-    z = (7.787 * z) + (16.0 / 116.0);
-  }
+  let x = xyz.x / D65.x;
+  let y = xyz.y / D65.y;
+  let z = xyz.z / D65.z;
+
+  // XYZ to Lab using CIE exact constants
+  x = (x > CIE_E) ? Math.pow(x, 1 / 3) : (CIE_K * x + 16) / 116;
+  y = (y > CIE_E) ? Math.pow(y, 1 / 3) : (CIE_K * y + 16) / 116;
+  z = (z > CIE_E) ? Math.pow(z, 1 / 3) : (CIE_K * z + 16) / 116;
+
   return {
     l: (116 * y) - 16,
     a: 500 * (x - y),
@@ -765,14 +1055,19 @@ export function xyz2lab(xyz: Xyz): Lab {
   };
 }
 
+/**
+ * Converts {@link Rgb} to {@link Xyz}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ */
 export function rgb2xyz(rgb: Rgb): Xyz {
-  const [var_R, var_G, var_B] = [rgb.r, rgb.g, rgb.b]
+  const [r, g, b] = [rgb.r, rgb.g, rgb.b]
     .map((x) => x / 255)
     .map((x) => x > 0.04045 ? Math.pow((x + 0.055) / 1.055, 2.4) : x / 12.92)
     .map((x) => x * 100);
   return {
-    x: var_R * 0.412453 + var_G * 0.357580 + var_B * 0.180423,
-    y: var_R * 0.212671 + var_G * 0.715160 + var_B * 0.072169,
-    z: var_R * 0.019334 + var_G * 0.119193 + var_B * 0.950227,
+    x: r * SRGB_TO_XYZ.xr + g * SRGB_TO_XYZ.xg + b * SRGB_TO_XYZ.xb,
+    y: r * SRGB_TO_XYZ.yr + g * SRGB_TO_XYZ.yg + b * SRGB_TO_XYZ.yb,
+    z: r * SRGB_TO_XYZ.zr + g * SRGB_TO_XYZ.zg + b * SRGB_TO_XYZ.zb,
   };
 }

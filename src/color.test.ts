@@ -13,6 +13,7 @@ import {
   hsv2rgb,
   hwb2rgb,
   lab2lch,
+  lab2lyz,
   lch2lab,
   Rgb,
   rgb2cmyk,
@@ -21,7 +22,8 @@ import {
   rgb2hwb,
   rgb2lab,
   rgb2xyz,
-  roundTo
+  roundTo,
+  xyz2rgb,
 } from "./color";
 import { assertAlmostEquals, assertAlmostEqualsColor, multiplyColor } from "./helpers";
 
@@ -88,19 +90,21 @@ test("rgb -> hsl -> hcg -> rgb", () => {
   }
 });
 
-test("rgb -> lab", () => {
+test("rgb -> lab -> xyz -> rgb", () => {
+  // Full 16.7M color round-trip through Lab color space
+  // Max error ~1e-4 (0.0001) per RGB channel - excellent precision
+  // Enabled after switching to exact CIE constants (216/24389, 24389/27)
   for (let r = 0; r < 256; r++) {
     for (let g = 0; g < 256; g++) {
       for (let b = 0; b < 256; b++) {
-        const _rgb: Rgb = { r, g, b }; // eslint-disable-line @typescript-eslint/no-unused-vars
-        // const bRgb = xyz2rgb(xyz)
-        // assertAlmostEquals(bRgb.r, rgb.r);
-        // assertAlmostEquals(bRgb.g, rgb.g);
-        // assertAlmostEquals(bRgb.b, rgb.b);
-        // assertAlmostEquals(bLab.l, lab.l);
-        // assertAlmostEquals(bLab.a, lab.a);
-        // assertAlmostEquals(bLab.b, lab.b);
-        // const bRgb = xyz2rgb(xyz);
+        const rgb: Rgb = { r, g, b };
+        const lab = rgb2lab(rgb);
+        const lyz = lab2lyz(lab);
+        // Lyz uses 'l' for X coordinate (convert to Xyz)
+        const back = xyz2rgb({ x: lyz.l, y: lyz.y, z: lyz.z });
+        assertAlmostEquals(back.r, rgb.r, 1e-3);
+        assertAlmostEquals(back.g, rgb.g, 1e-3);
+        assertAlmostEquals(back.b, rgb.b, 1e-3);
       }
     }
   }
@@ -229,15 +233,16 @@ test("basics rgb -> cmyk", () => {
 
 test("rgb2lab - primary colors reference values", () => {
   // Reference values from colormine.org (D65 illuminant)
-  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 0, b: 0 }), { l: 53.23, a: 80.11, b: 67.22 }, 0.1);
-  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 255, b: 0 }), { l: 87.74, a: -86.18, b: 83.18 }, 0.1);
-  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 255 }), { l: 32.30, a: 79.20, b: -107.86 }, 0.1);
+  // Tighter tolerance (0.05) after switching to exact CIE constants
+  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 0, b: 0 }), { l: 53.23, a: 80.11, b: 67.22 }, 0.05);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 255, b: 0 }), { l: 87.74, a: -86.18, b: 83.18 }, 0.05);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 255 }), { l: 32.30, a: 79.20, b: -107.86 }, 0.05);
 });
 
 test("rgb2lab - black and white reference values", () => {
-  // Note: White has minor floating-point precision error in 'a' component (~0.01)
-  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 255, b: 255 }), { l: 100, a: 0, b: 0 }, 0.02);
-  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 0 }), { l: 0, a: 0, b: 0 }, 0.01);
+  // Tighter tolerance after switching to exact CIE constants and IEC matrix
+  assertAlmostEqualsColor(rgb2lab({ r: 255, g: 255, b: 255 }), { l: 100, a: 0, b: 0 }, 0.01);
+  assertAlmostEqualsColor(rgb2lab({ r: 0, g: 0, b: 0 }), { l: 0, a: 0, b: 0 }, 0.001);
 });
 
 test("rgb2lab - gray neutrality (a=0, b=0 for grays)", () => {
@@ -272,20 +277,22 @@ test("rgb2lab - gamma threshold boundary (0.04045)", () => {
 
 test("rgb2xyz - primary colors (IEC 61966-2-1 sRGB)", () => {
   // Reference: sRGB to XYZ matrix (scaled to 100)
-  // Red: X=41.24, Y=21.27, Z=1.93
-  assertAlmostEqualsColor(rgb2xyz({ r: 255, g: 0, b: 0 }), { x: 41.24, y: 21.27, z: 1.93 }, 0.1);
-  // Green: X=35.76, Y=71.52, Z=11.92
-  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 255, b: 0 }), { x: 35.76, y: 71.52, z: 11.92 }, 0.1);
-  // Blue: X=18.04, Y=7.22, Z=95.03
-  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 0, b: 255 }), { x: 18.05, y: 7.22, z: 95.03 }, 0.1);
+  // Tighter tolerance (0.01) after switching to IEC 7-digit matrix
+  // Red: X=41.2456, Y=21.2673, Z=1.9334
+  assertAlmostEqualsColor(rgb2xyz({ r: 255, g: 0, b: 0 }), { x: 41.2456, y: 21.2673, z: 1.9334 }, 0.01);
+  // Green: X=35.7576, Y=71.5152, Z=11.9192
+  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 255, b: 0 }), { x: 35.7576, y: 71.5152, z: 11.9192 }, 0.01);
+  // Blue: X=18.0437, Y=7.2175, Z=95.0304
+  assertAlmostEqualsColor(rgb2xyz({ r: 0, g: 0, b: 255 }), { x: 18.0437, y: 7.2175, z: 95.0304 }, 0.01);
 });
 
 test("rgb2xyz - D65 white point reference", () => {
   // D65 standard illuminant: X=95.047, Y=100.000, Z=108.883
+  // Tighter tolerance (0.01) after switching to IEC 7-digit matrix
   const white = rgb2xyz({ r: 255, g: 255, b: 255 });
-  assertAlmostEquals(white.x, 95.047, 0.1, "White X should match D65");
-  assertAlmostEquals(white.y, 100.0, 0.1, "White Y should be 100");
-  assertAlmostEquals(white.z, 108.883, 0.1, "White Z should match D65");
+  assertAlmostEquals(white.x, 95.047, 0.01, "White X should match D65");
+  assertAlmostEquals(white.y, 100.0, 0.01, "White Y should be 100");
+  assertAlmostEquals(white.z, 108.883, 0.01, "White Z should match D65");
 });
 
 test("rgb2hsl - near-equal RGB values (floating-point equality)", () => {
