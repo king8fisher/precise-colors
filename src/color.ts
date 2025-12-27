@@ -115,15 +115,10 @@ export interface Hwb {
 }
 
 /**
- * CIE L*a*b* perceptual color space (1976).
- * a* and b* are theoretically unbounded but clamped to `[-128..127]` for 8-bit storage.
- * @property {number} l - Lightness `[0..100]`
- * @property {number} a - Green-Red axis `[-128..127]`
- * @property {number} b - Blue-Yellow axis `[-128..127]`
- * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space|Wikipedia}
- * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ * Base Lab color values without illuminant branding.
+ * Use {@link LabD65} or {@link LabD50} for type-safe illuminant handling.
  */
-export interface Lab {
+interface LabBase {
   /** Lightness `[0..100]` */
   readonly l: number;
   /** Green (-) to Red (+) axis. Clamped `[-128..127]`, theoretical `~[-430..+172]` */
@@ -131,6 +126,40 @@ export interface Lab {
   /** Blue (-) to Yellow (+) axis. Clamped `[-128..127]`, theoretically unbounded */
   readonly b: number;
 }
+
+/** Brand symbol for D65 illuminant */
+declare const D65Brand: unique symbol;
+/** Brand symbol for D50 illuminant */
+declare const D50Brand: unique symbol;
+
+/**
+ * CIE L*a*b* color with D65 illuminant (traditional Lab).
+ *
+ * Used by: {@link rgb2lab}, {@link lab2rgb}, {@link lab2lyz}, {@link lab2lch}, {@link lch2lab}
+ *
+ * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space|Wikipedia}
+ */
+export interface LabD65 extends LabBase {
+  /** Type brand for D65 illuminant (compile-time only) */
+  readonly [D65Brand]?: never;
+}
+
+/**
+ * CIE L*a*b* color with D50 illuminant (CSS Color 4 compatible).
+ *
+ * Used by: {@link rgb2labD50}, {@link labD502rgb}
+ *
+ * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ */
+export interface LabD50 extends LabBase {
+  /** Type brand for D50 illuminant (compile-time only) */
+  readonly [D50Brand]?: never;
+}
+
+/**
+ * Alias for {@link LabD65}.
+ */
+export type Lab = LabD65;
 
 /**
  * CIE XYZ tristimulus color space with D65 illuminant.
@@ -857,29 +886,30 @@ export function gray2hwb(gray: number): Hwb {
 
 /**
  * Converts gray to {@link Cmyk}.
- * @param gray - Gray level `[0..100]`
- * @returns {@link Cmyk} color, c=0, m=0, y=0, k=gray
+ * @param gray - Gray level `[0..100]` (0=black, 100=white)
+ * @returns {@link Cmyk} color, c=0, m=0, y=0, k=100-gray
  */
 export function gray2cmyk(gray: number): Cmyk {
   return {
     c: 0,
     m: 0,
     y: 0,
-    k: gray,
+    k: 100 - gray,
   };
 }
 
 /**
- * Converts gray to {@link Lab}.
- * @param gray - Gray level `[0..100]`
- * @returns {@link Lab} color, l=gray, a=0, b=0
+ * Converts gray to {@link LabD65}.
+ *
+ * Uses the proper CIE Lab L* formula (cube root transfer function)
+ * to maintain consistency with other gray functions.
+ *
+ * @param gray - Gray level `[0..100]` (0=black, 100=white)
+ * @returns {@link LabD65} color with correct L* value, a=0, b=0
+ * @see {@link http://www.brucelindbloom.com/Eqn_XYZ_to_Lab.html|Bruce Lindbloom - XYZ to Lab}
  */
-export function gray2lab(gray: number): Lab {
-  return {
-    l: gray,
-    a: 0,
-    b: 0,
-  };
+export function gray2lab(gray: number): LabD65 {
+  return rgb2lab(gray2rgb(gray));
 }
 
 /**
@@ -901,16 +931,55 @@ const SRGB_TO_XYZ = {
 };
 
 /**
+ * XYZ to sRGB transformation matrix (D65).
+ * IEC 61966-2-1 standard inverse matrix.
+ * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
+ */
+const XYZ_TO_SRGB = {
+  rx: 3.2404542, ry: -1.5371385, rz: -0.4985314,
+  gx: -0.9692660, gy: 1.8760108, gz: 0.0415560,
+  bx: 0.0556434, by: -0.2040259, bz: 1.0572252,
+};
+
+/**
  * D65 white point tristimulus values.
  */
 const D65: Xyz = { x: 95.047, y: 100, z: 108.883 };
 
 /**
- * Converts {@link Rgb} to {@link Lab}.
- * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * D50 white point tristimulus values (ASTM E308-01).
+ * Used by CSS Color 4 Lab and ICC profiles.
  */
-export function rgb2lab(rgb: Rgb): Lab {
+const D50: Xyz = { x: 96.422, y: 100, z: 82.521 };
+
+/**
+ * sRGB to XYZ transformation matrix (Bradford-adapted to D50).
+ * For CSS Color 4 Lab compatibility.
+ * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
+ */
+const SRGB_TO_XYZ_D50 = {
+  xr: 0.4360747, xg: 0.3850649, xb: 0.1430804,
+  yr: 0.2225045, yg: 0.7168786, yb: 0.0606169,
+  zr: 0.0139322, zg: 0.0971045, zb: 0.7141733,
+};
+
+/**
+ * XYZ to sRGB transformation matrix (Bradford-adapted from D50).
+ * For CSS Color 4 Lab compatibility.
+ * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
+ */
+const XYZ_D50_TO_SRGB = {
+  rx: 3.1338561, ry: -1.6168667, rz: -0.4906146,
+  gx: -0.9787684, gy: 1.9161415, gz: 0.0334540,
+  bx: 0.0719453, by: -0.2289914, bz: 1.4052427,
+};
+
+/**
+ * Converts {@link Rgb} to {@link LabD65}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link LabD65} color (D65 illuminant), l `[0..100]`, a/b `[-128..127]`
+ */
+export function rgb2lab(rgb: Rgb): LabD65 {
   let r = rgb.r / 255,
     g = rgb.g / 255,
     b = rgb.b / 255;
@@ -934,11 +1003,135 @@ export function rgb2lab(rgb: Rgb): Lab {
 }
 
 /**
- * Converts {@link Lab} to {@link Lyz} (XYZ values).
- * @param lab - {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * Converts {@link LabD65} to {@link Rgb}.
+ *
+ * This is the inverse of rgb2lab, using D65 white point.
+ *
+ * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ */
+export function lab2rgb(lab: LabD65): Rgb {
+  // Lab to XYZ
+  const fy = (lab.l + 16) / 116;
+  const fx = lab.a / 500 + fy;
+  const fz = fy - lab.b / 200;
+
+  const fx3 = Math.pow(fx, 3);
+  const fy3 = Math.pow(fy, 3);
+  const fz3 = Math.pow(fz, 3);
+
+  // Lab to XYZ using CIE exact constants
+  let x = (fx3 > CIE_E) ? fx3 : (116 * fx - 16) / CIE_K;
+  let y = (fy3 > CIE_E) ? fy3 : (116 * fy - 16) / CIE_K;
+  let z = (fz3 > CIE_E) ? fz3 : (116 * fz - 16) / CIE_K;
+
+  // Scale by D65 white point
+  x = x * (D65.x / 100);
+  y = y * (D65.y / 100);
+  z = z * (D65.z / 100);
+
+  // XYZ to linear RGB using D65 matrix
+  let r = x * XYZ_TO_SRGB.rx + y * XYZ_TO_SRGB.ry + z * XYZ_TO_SRGB.rz;
+  let g = x * XYZ_TO_SRGB.gx + y * XYZ_TO_SRGB.gy + z * XYZ_TO_SRGB.gz;
+  let b = x * XYZ_TO_SRGB.bx + y * XYZ_TO_SRGB.by + z * XYZ_TO_SRGB.bz;
+
+  // sRGB gamma encoding
+  r = (r > 0.0031308) ? (1.055 * Math.pow(r, 1 / 2.4) - 0.055) : r * 12.92;
+  g = (g > 0.0031308) ? (1.055 * Math.pow(g, 1 / 2.4) - 0.055) : g * 12.92;
+  b = (b > 0.0031308) ? (1.055 * Math.pow(b, 1 / 2.4) - 0.055) : b * 12.92;
+
+  return {
+    r: r * 255,
+    g: g * 255,
+    b: b * 255,
+  };
+}
+
+/**
+ * Converts {@link Rgb} to {@link LabD50} (CSS Color 4 compatible).
+ *
+ * This matches the CSS `lab()` function which uses D50 white point.
+ * Use this for CSS Color 4 interoperability.
+ *
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ */
+export function rgb2labD50(rgb: Rgb): LabD50 {
+  let r = rgb.r / 255,
+    g = rgb.g / 255,
+    b = rgb.b / 255;
+
+  // sRGB gamma decoding
+  r = (r > 0.04045) ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+  g = (g > 0.04045) ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+  b = (b > 0.04045) ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+  // RGB to XYZ using Bradford-adapted D50 matrix, normalized by D50 white point
+  let x = (r * SRGB_TO_XYZ_D50.xr + g * SRGB_TO_XYZ_D50.xg + b * SRGB_TO_XYZ_D50.xb) / (D50.x / 100);
+  let y = (r * SRGB_TO_XYZ_D50.yr + g * SRGB_TO_XYZ_D50.yg + b * SRGB_TO_XYZ_D50.yb) / (D50.y / 100);
+  let z = (r * SRGB_TO_XYZ_D50.zr + g * SRGB_TO_XYZ_D50.zg + b * SRGB_TO_XYZ_D50.zb) / (D50.z / 100);
+
+  // XYZ to Lab using CIE exact constants
+  x = (x > CIE_E) ? Math.pow(x, 1 / 3) : (CIE_K * x + 16) / 116;
+  y = (y > CIE_E) ? Math.pow(y, 1 / 3) : (CIE_K * y + 16) / 116;
+  z = (z > CIE_E) ? Math.pow(z, 1 / 3) : (CIE_K * z + 16) / 116;
+
+  return { l: (116 * y) - 16, a: 500 * (x - y), b: 200 * (y - z) };
+}
+
+/**
+ * Converts {@link LabD50} to {@link Rgb} (CSS Color 4 compatible).
+ *
+ * This is the inverse of rgb2labD50, matching CSS `lab()` function behavior.
+ *
+ * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ */
+export function labD502rgb(lab: LabD50): Rgb {
+  // Lab to XYZ
+  const fy = (lab.l + 16) / 116;
+  const fx = lab.a / 500 + fy;
+  const fz = fy - lab.b / 200;
+
+  const fx3 = Math.pow(fx, 3);
+  const fy3 = Math.pow(fy, 3);
+  const fz3 = Math.pow(fz, 3);
+
+  // Lab to XYZ using CIE exact constants
+  let x = (fx3 > CIE_E) ? fx3 : (116 * fx - 16) / CIE_K;
+  let y = (fy3 > CIE_E) ? fy3 : (116 * fy - 16) / CIE_K;
+  let z = (fz3 > CIE_E) ? fz3 : (116 * fz - 16) / CIE_K;
+
+  // Scale by D50 white point
+  x = x * (D50.x / 100);
+  y = y * (D50.y / 100);
+  z = z * (D50.z / 100);
+
+  // XYZ to linear RGB using Bradford-adapted D50 matrix
+  let r = x * XYZ_D50_TO_SRGB.rx + y * XYZ_D50_TO_SRGB.ry + z * XYZ_D50_TO_SRGB.rz;
+  let g = x * XYZ_D50_TO_SRGB.gx + y * XYZ_D50_TO_SRGB.gy + z * XYZ_D50_TO_SRGB.gz;
+  let b = x * XYZ_D50_TO_SRGB.bx + y * XYZ_D50_TO_SRGB.by + z * XYZ_D50_TO_SRGB.bz;
+
+  // sRGB gamma encoding
+  r = (r > 0.0031308) ? (1.055 * Math.pow(r, 1 / 2.4) - 0.055) : r * 12.92;
+  g = (g > 0.0031308) ? (1.055 * Math.pow(g, 1 / 2.4) - 0.055) : g * 12.92;
+  b = (b > 0.0031308) ? (1.055 * Math.pow(b, 1 / 2.4) - 0.055) : b * 12.92;
+
+  return {
+    r: r * 255,
+    g: g * 255,
+    b: b * 255,
+  };
+}
+
+/**
+ * Converts {@link LabD65} to {@link Lyz} (XYZ values with D65 illuminant).
+ * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
  * @returns {@link Lyz} color, l `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
  */
-export function lab2lyz(lab: Lab): Lyz {
+export function lab2lyz(lab: LabD65): Lyz {
   let y = (lab.l + 16) / 116;
   let x = lab.a / 500 + y;
   let z = y - lab.b / 200;
@@ -960,11 +1153,11 @@ export function lab2lyz(lab: Lab): Lyz {
 }
 
 /**
- * Converts {@link Lab} to {@link Lch}.
- * @param lab - {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * Converts {@link LabD65} to {@link Lch}.
+ * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
  * @returns {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
  */
-export function lab2lch(lab: Lab): Lch {
+export function lab2lch(lab: LabD65): Lch {
   let h: number;
   const hr: number = Math.atan2(lab.b, lab.a);
   h = hr * 360.0 / 2.0 / Math.PI;
@@ -980,11 +1173,11 @@ export function lab2lch(lab: Lab): Lch {
 }
 
 /**
- * Converts {@link Lch} to {@link Lab}.
+ * Converts {@link Lch} to {@link LabD65}.
  * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
- * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
  */
-export function lch2lab(lch: Lch): Lab {
+export function lch2lab(lch: Lch): LabD65 {
   const hr: number = lch.h / 360.0 * 2 * Math.PI;
   const a: number = lch.c * Math.cos(hr);
   const b: number = lch.c * Math.sin(hr);
@@ -1034,11 +1227,11 @@ export function xyz2rgb(xyz: Xyz): Rgb {
 }
 
 /**
- * Converts {@link Xyz} to {@link Lab}.
- * @param xyz - {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
- * @returns {@link Lab} color, l `[0..100]`, a/b `[-128..127]`
+ * Converts {@link Xyz} to {@link LabD65}.
+ * @param xyz - {@link Xyz} color (D65), x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ * @returns {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
  */
-export function xyz2lab(xyz: Xyz): Lab {
+export function xyz2lab(xyz: Xyz): LabD65 {
   let x = xyz.x / D65.x;
   let y = xyz.y / D65.y;
   let z = xyz.z / D65.z;
@@ -1071,3 +1264,28 @@ export function rgb2xyz(rgb: Rgb): Xyz {
     z: r * SRGB_TO_XYZ.zr + g * SRGB_TO_XYZ.zg + b * SRGB_TO_XYZ.zb,
   };
 }
+
+// ============================================================================
+// D65 Function Aliases (explicit illuminant naming)
+// ============================================================================
+
+/** Alias for {@link rgb2lab} with explicit D65 naming. */
+export const rgb2labD65 = rgb2lab;
+
+/** Alias for {@link lab2rgb} with explicit D65 naming. */
+export const labD652rgb = lab2rgb;
+
+/** Alias for {@link lab2lyz} with explicit D65 naming. */
+export const labD652lyz = lab2lyz;
+
+/** Alias for {@link lab2lch} with explicit D65 naming. */
+export const labD652lch = lab2lch;
+
+/** Alias for {@link lch2lab} with explicit D65 naming. */
+export const lch2labD65 = lch2lab;
+
+/** Alias for {@link xyz2lab} with explicit D65 naming. */
+export const xyz2labD65 = xyz2lab;
+
+/** Alias for {@link gray2lab} with explicit D65 naming. */
+export const gray2labD65 = gray2lab;

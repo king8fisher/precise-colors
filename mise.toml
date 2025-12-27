@@ -2,4 +2,7 @@
 node = "18"
 
 [tasks.lint]
-run = "pnpm lint"
+run = "bun lint"
+
+[tasks.test]
+run = "bun test"
