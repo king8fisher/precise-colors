@@ -214,6 +214,40 @@ export interface Lch {
 }
 
 /**
+ * Oklab color space - perceptually uniform color space.
+ * @property {number} l - Perceived lightness `[0..1]`
+ * @property {number} a - Green-red axis `[-0.4..0.4]`
+ * @property {number} b - Blue-yellow axis `[-0.4..0.4]`
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * @see {@link https://www.w3.org/TR/css-color-4/#ok-lab|W3C CSS Color 4}
+ */
+export interface Oklab {
+  /** Perceived lightness `[0..1]` */
+  readonly l: number;
+  /** Green-red axis `[-0.4..0.4]` */
+  readonly a: number;
+  /** Blue-yellow axis `[-0.4..0.4]` */
+  readonly b: number;
+}
+
+/**
+ * Oklch color space - polar form of Oklab.
+ * @property {number} l - Perceived lightness `[0..1]`
+ * @property {number} c - Chroma `[0..0.4+]`
+ * @property {number} h - Hue angle `[0..360]`
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
+ */
+export interface Oklch {
+  /** Perceived lightness `[0..1]` */
+  readonly l: number;
+  /** Chroma `[0..0.4+]` */
+  readonly c: number;
+  /** Hue angle `[0..360]` */
+  readonly h: number;
+}
+
+/**
  * Rounds a number to specified decimal places.
  * Uses exponential notation to avoid floating-point errors
  * (e.g., `1.005 * 100 = 100.49999...` but `roundTo(1.005, 2) = 1.01`).
@@ -287,6 +321,47 @@ export function hwb2css(hwb: Hwb) {
 }
 
 /**
+ * Converts {@link Oklab} to CSS oklab() string.
+ * @param oklab - {@link Oklab} color, l `[0..1]`, a/b `[-0.4..0.4]`
+ * @returns CSS string `"oklab(l a b)"` (rounded to 4 decimals)
+ * @see {@link https://www.w3.org/TR/css-color-4/#ok-lab|W3C CSS Color 4}
+ */
+export function oklab2css(oklab: Oklab): string {
+  return `oklab(${roundTo(oklab.l, 4)} ${roundTo(oklab.a, 4)} ${roundTo(oklab.b, 4)})`;
+}
+
+/**
+ * Converts {@link Oklch} to CSS oklch() string.
+ * @param oklch - {@link Oklch} color, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ * @returns CSS string `"oklch(l c h)"` (rounded to 4 decimals for l/c, 2 for h)
+ * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
+ */
+export function oklch2css(oklch: Oklch): string {
+  return `oklch(${roundTo(oklch.l, 4)} ${roundTo(oklch.c, 4)} ${roundTo(oklch.h, 2)})`;
+}
+
+/**
+ * Converts {@link LabD50} to CSS lab() string.
+ * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns CSS string `"lab(l% a b)"` (rounded to 2 decimals)
+ * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ */
+export function labD502css(lab: LabD50): string {
+  return `lab(${roundTo(lab.l, 2)}% ${roundTo(lab.a, 2)} ${roundTo(lab.b, 2)})`;
+}
+
+/**
+ * Converts {@link Lch} (D50) to CSS lch() string.
+ * Note: CSS lch() uses D50 illuminant.
+ * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @returns CSS string `"lch(l% c h)"` (rounded to 2 decimals)
+ * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ */
+export function lchD502css(lch: Lch): string {
+  return `lch(${roundTo(lch.l, 2)}% ${roundTo(lch.c, 2)} ${roundTo(lch.h, 2)})`;
+}
+
+/**
  * Converts {@link Rgb} to 6-digit hex string (without #).
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
  * @returns Hex string `"rrggbb"` (rounded)
@@ -310,7 +385,7 @@ export function gray2hex(gray: number): string {
 /**
  * Parses hex string to {@link Rgb}.
  * @param input - Hex string (6 digits, without #)
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function hex2rgb(input: string): Rgb {
   const value: number = parseInt(input, 16);
@@ -327,7 +402,7 @@ export function hex2rgb(input: string): Rgb {
 /**
  * Converts {@link Hsl} to {@link Rgb}.
  * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hsl2rgb(hsl: Hsl): Rgb {
   const h = hsl.h / 360;
@@ -376,7 +451,7 @@ export function hsl2rgb(hsl: Hsl): Rgb {
 /**
  * Converts {@link Hsl} to {@link Hsv}.
  * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
- * @returns {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ * @returns color - {@link Hsv}, h `[0..360]`, s/v `[0..100]`
  */
 export function hsl2hsv(hsl: Hsl): Hsv {
   let s = hsl.s / 100;
@@ -411,7 +486,7 @@ export function hsl2hsv(hsl: Hsl): Hsv {
 /**
  * Converts {@link Hsl} to {@link Hcg}.
  * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
- * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns color - {@link Hcg}, h `[0..360]`, c/g `[0..100]`
  */
 export function hsl2hcg(hsl: Hsl): Hcg {
   const s = hsl.s / 100;
@@ -436,7 +511,7 @@ export function hsl2hcg(hsl: Hsl): Hcg {
 /**
  * Converts {@link Hsv} to {@link Rgb}.
  * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hsv2rgb(hsv: Hsv): Rgb {
   const h = hsv.h / 60;
@@ -469,7 +544,7 @@ export function hsv2rgb(hsv: Hsv): Rgb {
 /**
  * Converts {@link Hsv} to {@link Hsl}.
  * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
- * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns color - {@link Hsl}, h `[0..360]`, s/l `[0..100]`
  */
 export function hsv2hsl(hsv: Hsv): Hsl {
   const s = hsv.s / 100;
@@ -501,7 +576,7 @@ export function hsv2hsl(hsv: Hsv): Hsl {
 /**
  * Converts {@link Hsv} to {@link Hcg}.
  * @param hsv - {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
- * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns color - {@link Hcg}, h `[0..360]`, c/g `[0..100]`
  */
 export function hsv2hcg(hsv: Hsv): Hcg {
   const s = hsv.s / 100;
@@ -521,7 +596,7 @@ export function hsv2hcg(hsv: Hsv): Hcg {
 /**
  * Converts {@link Apple} 16-bit RGB to 8-bit {@link Rgb}.
  * @param rgb16 - {@link Apple} color, r16/g16/b16 `[0..65535]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function apple2rgb(rgb16: Apple): Rgb {
   return {
@@ -532,9 +607,22 @@ export function apple2rgb(rgb16: Apple): Rgb {
 }
 
 /**
+ * Converts 8-bit {@link Rgb} to {@link Apple} 16-bit RGB.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Apple}, r16/g16/b16 `[0..65535]`
+ */
+export function rgb2apple(rgb: Rgb): Apple {
+  return {
+    r16: (rgb.r / 255) * 65535,
+    g16: (rgb.g / 255) * 65535,
+    b16: (rgb.b / 255) * 65535,
+  };
+}
+
+/**
  * Converts {@link Cmyk} to {@link Rgb}.
  * @param cmyk - {@link Cmyk} color, c/m/y/k `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function cmyk2rgb(cmyk: Cmyk): Rgb {
   const c = cmyk.c / 100;
@@ -556,7 +644,7 @@ export function cmyk2rgb(cmyk: Cmyk): Rgb {
 /**
  * Converts {@link Rgb} to {@link Cmyk}.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link Cmyk} color, c/m/y/k `[0..100]`
+ * @returns color - {@link Cmyk}, c/m/y/k `[0..100]`
  */
 export function rgb2cmyk(rgb: Rgb): Cmyk {
   const r = rgb.r / 255;
@@ -574,7 +662,7 @@ export function rgb2cmyk(rgb: Rgb): Cmyk {
 /**
  * Converts {@link Rgb} to {@link Hsl}.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns color - {@link Hsl}, h `[0..360]`, s/l `[0..100]`
  */
 export function rgb2hsl(rgb: Rgb): Hsl {
   const r = rgb.r / 255;
@@ -622,7 +710,7 @@ export function rgb2hsl(rgb: Rgb): Hsl {
 /**
  * Converts {@link Rgb} to {@link Hwb}.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @returns color - {@link Hwb}, h `[0..360]`, w/b `[0..100]`
  */
 export function rgb2hwb(rgb: Rgb): Hwb {
   const h = rgb2hsl(rgb).h;
@@ -635,7 +723,7 @@ export function rgb2hwb(rgb: Rgb): Hwb {
 /**
  * Converts {@link Hwb} to {@link Rgb}.
  * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hwb2rgb(hwb: Hwb): Rgb {
   const h = hwb.h / 360;
@@ -699,7 +787,7 @@ export function hwb2rgb(hwb: Hwb): Rgb {
 /**
  * Converts {@link Hwb} to {@link Hcg}.
  * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
- * @returns {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
+ * @returns color - {@link Hcg}, h `[0..360]`, c/g `[0..100]`
  */
 export function hwb2hcg(hwb: Hwb): Hcg {
   const w = hwb.w / 100;
@@ -720,7 +808,7 @@ export function hwb2hcg(hwb: Hwb): Hcg {
 /**
  * Converts {@link Hcg} to {@link Rgb}.
  * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]` (not rounded)
+ * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hcg2rgb(hcg: Hcg): Rgb {
   const h = hcg.h / 360;
@@ -777,7 +865,7 @@ export function hcg2rgb(hcg: Hcg): Rgb {
 /**
  * Converts {@link Hcg} to {@link Hsv}.
  * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
- * @returns {@link Hsv} color, h `[0..360]`, s/v `[0..100]`
+ * @returns color - {@link Hsv}, h `[0..360]`, s/v `[0..100]`
  */
 export function hcg2hsv(hcg: Hcg): Hsv {
   const c = hcg.c / 100;
@@ -797,7 +885,7 @@ export function hcg2hsv(hcg: Hcg): Hsv {
 /**
  * Converts {@link Hcg} to {@link Hsl}.
  * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
- * @returns {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @returns color - {@link Hsl}, h `[0..360]`, s/l `[0..100]`
  */
 export function hcg2hsl(hcg: Hcg): Hsl {
   const c = hcg.c / 100;
@@ -819,7 +907,7 @@ export function hcg2hsl(hcg: Hcg): Hsl {
 /**
  * Converts {@link Hcg} to {@link Hwb}.
  * @param hcg - {@link Hcg} color, h `[0..360]`, c/g `[0..100]`
- * @returns {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @returns color - {@link Hwb}, h `[0..360]`, w/b `[0..100]`
  */
 export function hcg2hwb(hcg: Hcg): Hwb {
   const c = hcg.c / 100;
@@ -835,7 +923,7 @@ export function hcg2hwb(hcg: Hcg): Hwb {
 /**
  * Converts gray to {@link Rgb}.
  * @param gray - Gray level `[0..100]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function gray2rgb(gray: number): Rgb {
   return {
@@ -848,7 +936,7 @@ export function gray2rgb(gray: number): Rgb {
 /**
  * Converts gray to {@link Hsl}.
  * @param gray - Gray level `[0..100]`
- * @returns {@link Hsl} color, h=0, s=0, l=gray
+ * @returns color - {@link Hsl}, h=0, s=0, l=gray
  */
 export function gray2hsl(gray: number): Hsl {
   return {
@@ -861,7 +949,7 @@ export function gray2hsl(gray: number): Hsl {
 /**
  * Converts gray to {@link Hsv}.
  * @param gray - Gray level `[0..100]`
- * @returns {@link Hsv} color, h=0, s=0, v=gray
+ * @returns color - {@link Hsv}, h=0, s=0, v=gray
  */
 export function gray2hsv(gray: number): Hsv {
   return {
@@ -874,7 +962,7 @@ export function gray2hsv(gray: number): Hsv {
 /**
  * Converts gray to {@link Hwb}.
  * @param gray - Gray level `[0..100]`
- * @returns {@link Hwb} color, h=0, w=gray, b=100-gray
+ * @returns color - {@link Hwb}, h=0, w=gray, b=100-gray
  */
 export function gray2hwb(gray: number): Hwb {
   return {
@@ -887,7 +975,7 @@ export function gray2hwb(gray: number): Hwb {
 /**
  * Converts gray to {@link Cmyk}.
  * @param gray - Gray level `[0..100]` (0=black, 100=white)
- * @returns {@link Cmyk} color, c=0, m=0, y=0, k=100-gray
+ * @returns color - {@link Cmyk}, c=0, m=0, y=0, k=100-gray
  */
 export function gray2cmyk(gray: number): Cmyk {
   return {
@@ -905,7 +993,7 @@ export function gray2cmyk(gray: number): Cmyk {
  * to maintain consistency with other gray functions.
  *
  * @param gray - Gray level `[0..100]` (0=black, 100=white)
- * @returns {@link LabD65} color with correct L* value, a=0, b=0
+ * @returns color - {@link LabD65}, L* value with cube root formula, a=0, b=0
  * @see {@link http://www.brucelindbloom.com/Eqn_XYZ_to_Lab.html|Bruce Lindbloom - XYZ to Lab}
  */
 export function gray2lab(gray: number): LabD65 {
@@ -975,9 +1063,49 @@ const XYZ_D50_TO_SRGB = {
 };
 
 /**
+ * Linear sRGB to LMS matrix for Oklab.
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+const SRGB_TO_LMS = {
+  lr: 0.4122214708, lg: 0.5363325363, lb: 0.0514459929,
+  mr: 0.2119034982, mg: 0.6806995451, mb: 0.1073969566,
+  sr: 0.0883024619, sg: 0.2817188376, sb: 0.6299787005,
+};
+
+/**
+ * LMS (after cube root) to Oklab matrix.
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+const LMS_TO_OKLAB = {
+  ll: 0.2104542553, lm: 0.7936177850, ls: -0.0040720468,
+  al: 1.9779984951, am: -2.4285922050, as: 0.4505937099,
+  bl: 0.0259040371, bm: 0.7827717662, bs: -0.8086757660,
+};
+
+/**
+ * Oklab to LMS (before cubing) matrix - inverse of LMS_TO_OKLAB.
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+const OKLAB_TO_LMS = {
+  ll: 1.0000000000, lm: 0.3963377774, ls: 0.2158037573,
+  ml: 1.0000000000, mm: -0.1055613458, ms: -0.0638541728,
+  sl: 1.0000000000, sm: -0.0894841775, ss: -1.2914855480,
+};
+
+/**
+ * LMS to linear sRGB matrix - inverse of SRGB_TO_LMS.
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+const LMS_TO_SRGB = {
+  rl: 4.0767416621, rm: -3.3077115913, rs: 0.2309699292,
+  gl: -1.2684380046, gm: 2.6097574011, gs: -0.3413193965,
+  bl: -0.0041960863, bm: -0.7034186147, bs: 1.7076147010,
+};
+
+/**
  * Converts {@link Rgb} to {@link LabD65}.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link LabD65} color (D65 illuminant), l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LabD65} (D65 illuminant), l `[0..100]`, a/b `[-128..127]`
  */
 export function rgb2lab(rgb: Rgb): LabD65 {
   let r = rgb.r / 255,
@@ -1008,7 +1136,7 @@ export function rgb2lab(rgb: Rgb): LabD65 {
  * This is the inverse of rgb2lab, using D65 white point.
  *
  * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function lab2rgb(lab: LabD65): Rgb {
   // Lab to XYZ
@@ -1054,7 +1182,7 @@ export function lab2rgb(lab: LabD65): Rgb {
  * Use this for CSS Color 4 interoperability.
  *
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LabD50}, l `[0..100]`, a/b `[-128..127]`
  * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
  */
 export function rgb2labD50(rgb: Rgb): LabD50 {
@@ -1086,7 +1214,7 @@ export function rgb2labD50(rgb: Rgb): LabD50 {
  * This is the inverse of rgb2labD50, matching CSS `lab()` function behavior.
  *
  * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
  */
 export function labD502rgb(lab: LabD50): Rgb {
@@ -1127,9 +1255,136 @@ export function labD502rgb(lab: LabD50): Rgb {
 }
 
 /**
+ * Converts {@link Rgb} to {@link Oklab}.
+ *
+ * Oklab is a perceptually uniform color space designed by Björn Ottosson.
+ * It provides better hue linearity than CIE Lab.
+ *
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Oklab}, l `[0..1]`, a/b `[-0.4..0.4]`
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+export function rgb2oklab(rgb: Rgb): Oklab {
+  let r = rgb.r / 255,
+    g = rgb.g / 255,
+    b = rgb.b / 255;
+
+  // sRGB gamma decoding (linearize)
+  r = (r > 0.04045) ? Math.pow((r + 0.055) / 1.055, 2.4) : r / 12.92;
+  g = (g > 0.04045) ? Math.pow((g + 0.055) / 1.055, 2.4) : g / 12.92;
+  b = (b > 0.04045) ? Math.pow((b + 0.055) / 1.055, 2.4) : b / 12.92;
+
+  // Linear RGB to LMS
+  const l = r * SRGB_TO_LMS.lr + g * SRGB_TO_LMS.lg + b * SRGB_TO_LMS.lb;
+  const m = r * SRGB_TO_LMS.mr + g * SRGB_TO_LMS.mg + b * SRGB_TO_LMS.mb;
+  const s = r * SRGB_TO_LMS.sr + g * SRGB_TO_LMS.sg + b * SRGB_TO_LMS.sb;
+
+  // Cube root (nonlinearity)
+  const lp = Math.cbrt(l);
+  const mp = Math.cbrt(m);
+  const sp = Math.cbrt(s);
+
+  // LMS' to Oklab
+  return {
+    l: lp * LMS_TO_OKLAB.ll + mp * LMS_TO_OKLAB.lm + sp * LMS_TO_OKLAB.ls,
+    a: lp * LMS_TO_OKLAB.al + mp * LMS_TO_OKLAB.am + sp * LMS_TO_OKLAB.as,
+    b: lp * LMS_TO_OKLAB.bl + mp * LMS_TO_OKLAB.bm + sp * LMS_TO_OKLAB.bs,
+  };
+}
+
+/**
+ * Converts {@link Oklab} to {@link Rgb}.
+ *
+ * @param oklab - {@link Oklab} color, l `[0..1]`, a/b `[-0.4..0.4]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
+ * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ */
+export function oklab2rgb(oklab: Oklab): Rgb {
+  // Oklab to LMS'
+  const lp = oklab.l * OKLAB_TO_LMS.ll + oklab.a * OKLAB_TO_LMS.lm + oklab.b * OKLAB_TO_LMS.ls;
+  const mp = oklab.l * OKLAB_TO_LMS.ml + oklab.a * OKLAB_TO_LMS.mm + oklab.b * OKLAB_TO_LMS.ms;
+  const sp = oklab.l * OKLAB_TO_LMS.sl + oklab.a * OKLAB_TO_LMS.sm + oklab.b * OKLAB_TO_LMS.ss;
+
+  // Cube (inverse of cube root)
+  const l = lp * lp * lp;
+  const m = mp * mp * mp;
+  const s = sp * sp * sp;
+
+  // LMS to linear RGB
+  let r = l * LMS_TO_SRGB.rl + m * LMS_TO_SRGB.rm + s * LMS_TO_SRGB.rs;
+  let g = l * LMS_TO_SRGB.gl + m * LMS_TO_SRGB.gm + s * LMS_TO_SRGB.gs;
+  let b = l * LMS_TO_SRGB.bl + m * LMS_TO_SRGB.bm + s * LMS_TO_SRGB.bs;
+
+  // sRGB gamma encoding
+  r = (r > 0.0031308) ? (1.055 * Math.pow(r, 1 / 2.4) - 0.055) : r * 12.92;
+  g = (g > 0.0031308) ? (1.055 * Math.pow(g, 1 / 2.4) - 0.055) : g * 12.92;
+  b = (b > 0.0031308) ? (1.055 * Math.pow(b, 1 / 2.4) - 0.055) : b * 12.92;
+
+  return {
+    r: r * 255,
+    g: g * 255,
+    b: b * 255,
+  };
+}
+
+/**
+ * Converts {@link Oklab} to {@link Oklch} (polar form).
+ *
+ * @param oklab - {@link Oklab} color, l `[0..1]`, a/b `[-0.4..0.4]`
+ * @returns color - {@link Oklch}, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ */
+export function oklab2oklch(oklab: Oklab): Oklch {
+  const c = Math.sqrt(oklab.a * oklab.a + oklab.b * oklab.b);
+  let h = Math.atan2(oklab.b, oklab.a) * 180 / Math.PI;
+  if (h < 0) {
+    h += 360;
+  }
+  return { l: oklab.l, c, h };
+}
+
+/**
+ * Converts {@link Oklch} to {@link Oklab} (cartesian form).
+ *
+ * @param oklch - {@link Oklch} color, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ * @returns color - {@link Oklab}, l `[0..1]`, a/b `[-0.4..0.4]`
+ */
+export function oklch2oklab(oklch: Oklch): Oklab {
+  const hRad = oklch.h * Math.PI / 180;
+  return {
+    l: oklch.l,
+    a: oklch.c * Math.cos(hRad),
+    b: oklch.c * Math.sin(hRad),
+  };
+}
+
+/**
+ * Converts {@link Rgb} to {@link Oklch}.
+ *
+ * Convenience function combining rgb2oklab and oklab2oklch.
+ *
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Oklch}, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ */
+export function rgb2oklch(rgb: Rgb): Oklch {
+  return oklab2oklch(rgb2oklab(rgb));
+}
+
+/**
+ * Converts {@link Oklch} to {@link Rgb}.
+ *
+ * Convenience function combining oklch2oklab and oklab2rgb.
+ *
+ * @param oklch - {@link Oklch} color, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
+ */
+export function oklch2rgb(oklch: Oklch): Rgb {
+  return oklab2rgb(oklch2oklab(oklch));
+}
+
+/**
  * Converts {@link LabD65} to {@link Lyz} (XYZ values with D65 illuminant).
  * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
- * @returns {@link Lyz} color, l `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ * @returns color - {@link Lyz}, l `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
  */
 export function lab2lyz(lab: LabD65): Lyz {
   let y = (lab.l + 16) / 116;
@@ -1155,7 +1410,7 @@ export function lab2lyz(lab: LabD65): Lyz {
 /**
  * Converts {@link LabD65} to {@link Lch}.
  * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
- * @returns {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @returns color - {@link Lch}, l `[0..100]`, c `[0..~230]`, h `[0..360]`
  */
 export function lab2lch(lab: LabD65): Lch {
   let h: number;
@@ -1175,7 +1430,7 @@ export function lab2lch(lab: LabD65): Lch {
 /**
  * Converts {@link Lch} to {@link LabD65}.
  * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
- * @returns {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LabD65}, l `[0..100]`, a/b `[-128..127]`
  */
 export function lch2lab(lch: Lch): LabD65 {
   const hr: number = lch.h / 360.0 * 2 * Math.PI;
@@ -1191,7 +1446,7 @@ export function lch2lab(lch: Lch): LabD65 {
 /**
  * Converts {@link Xyz} to {@link Rgb}.
  * @param xyz - {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
- * @returns {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`
  */
 export function xyz2rgb(xyz: Xyz): Rgb {
   const x = xyz.x / 100;
@@ -1229,7 +1484,7 @@ export function xyz2rgb(xyz: Xyz): Rgb {
 /**
  * Converts {@link Xyz} to {@link LabD65}.
  * @param xyz - {@link Xyz} color (D65), x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
- * @returns {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LabD65}, l `[0..100]`, a/b `[-128..127]`
  */
 export function xyz2lab(xyz: Xyz): LabD65 {
   let x = xyz.x / D65.x;
@@ -1251,7 +1506,7 @@ export function xyz2lab(xyz: Xyz): LabD65 {
 /**
  * Converts {@link Rgb} to {@link Xyz}.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns {@link Xyz} color, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
+ * @returns color - {@link Xyz}, x `[0..95.047]`, y `[0..100]`, z `[0..108.883]`
  */
 export function rgb2xyz(rgb: Rgb): Xyz {
   const [r, g, b] = [rgb.r, rgb.g, rgb.b]

@@ -3,6 +3,8 @@ import {
   Cmyk,
   LabD50,
   LabD65,
+  Oklab,
+  Oklch,
   apple2rgb,
   cmyk2rgb,
   gray2cmyk,
@@ -20,8 +22,16 @@ import {
   lab2lch,
   lab2lyz,
   lab2rgb,
+  labD502css,
   labD502rgb,
   lch2lab,
+  lchD502css,
+  oklab2css,
+  oklab2oklch,
+  oklab2rgb,
+  oklch2css,
+  oklch2oklab,
+  oklch2rgb,
   Rgb,
   rgb2cmyk,
   rgb2hex,
@@ -29,6 +39,8 @@ import {
   rgb2hwb,
   rgb2lab,
   rgb2labD50,
+  rgb2oklab,
+  rgb2oklch,
   rgb2xyz,
   roundTo,
   xyz2rgb,
@@ -899,4 +911,162 @@ test("gray2lab -> lab2rgb produces same RGB as gray2rgb", () => {
     assertAlmostEquals(viaLab.g, direct.g, 0.01, `gray ${g}: g`);
     assertAlmostEquals(viaLab.b, direct.b, 0.01, `gray ${g}: b`);
   }
+});
+
+// ============================================================================
+// Oklab/Oklch Tests
+// Reference: https://bottosson.github.io/posts/oklab/
+// CSS Color 4: https://www.w3.org/TR/css-color-4/#ok-lab
+// ============================================================================
+
+test("rgb2oklab - black and white", () => {
+  // Black: L=0
+  const black = rgb2oklab({ r: 0, g: 0, b: 0 });
+  assertAlmostEquals(black.l, 0, 0.001, "Black L");
+  assertAlmostEquals(black.a, 0, 0.001, "Black a");
+  assertAlmostEquals(black.b, 0, 0.001, "Black b");
+
+  // White: L=1
+  const white = rgb2oklab({ r: 255, g: 255, b: 255 });
+  assertAlmostEquals(white.l, 1, 0.001, "White L");
+  assertAlmostEquals(white.a, 0, 0.001, "White a");
+  assertAlmostEquals(white.b, 0, 0.001, "White b");
+});
+
+test("rgb2oklab - gray neutrality", () => {
+  // All grays should have a=0, b=0
+  for (const g of [64, 128, 192]) {
+    const oklab = rgb2oklab({ r: g, g: g, b: g });
+    assertAlmostEquals(oklab.a, 0, 0.001, `Gray ${g} a should be 0`);
+    assertAlmostEquals(oklab.b, 0, 0.001, `Gray ${g} b should be 0`);
+    // L should be between 0 and 1
+    expect(oklab.l > 0 && oklab.l < 1).toBe(true);
+  }
+});
+
+test("rgb2oklab - primary colors", () => {
+  // Reference values from colorjs.io / CSS Color 4 spec
+  const red = rgb2oklab({ r: 255, g: 0, b: 0 });
+  assertAlmostEquals(red.l, 0.628, 0.01, "Red L");
+  assertAlmostEquals(red.a, 0.225, 0.01, "Red a");
+  assertAlmostEquals(red.b, 0.126, 0.02, "Red b");
+
+  const green = rgb2oklab({ r: 0, g: 255, b: 0 });
+  assertAlmostEquals(green.l, 0.866, 0.01, "Green L");
+
+  const blue = rgb2oklab({ r: 0, g: 0, b: 255 });
+  assertAlmostEquals(blue.l, 0.452, 0.01, "Blue L");
+});
+
+test("rgb2oklab -> oklab2rgb round-trip", () => {
+  const testColors: Rgb[] = [
+    { r: 255, g: 0, b: 0 },
+    { r: 0, g: 255, b: 0 },
+    { r: 0, g: 0, b: 255 },
+    { r: 255, g: 255, b: 0 },
+    { r: 255, g: 0, b: 255 },
+    { r: 0, g: 255, b: 255 },
+    { r: 128, g: 128, b: 128 },
+    { r: 100, g: 150, b: 200 },
+    { r: 0, g: 0, b: 0 },
+    { r: 255, g: 255, b: 255 },
+  ];
+
+  for (const rgb of testColors) {
+    const oklab = rgb2oklab(rgb);
+    const back = oklab2rgb(oklab);
+    assertAlmostEquals(back.r, rgb.r, 0.5, `r for ${JSON.stringify(rgb)}`);
+    assertAlmostEquals(back.g, rgb.g, 0.5, `g for ${JSON.stringify(rgb)}`);
+    assertAlmostEquals(back.b, rgb.b, 0.5, `b for ${JSON.stringify(rgb)}`);
+  }
+});
+
+test("oklab2oklch - polar conversion", () => {
+  // Positive a, zero b → h=0
+  const hue0 = oklab2oklch({ l: 0.5, a: 0.1, b: 0 });
+  assertAlmostEquals(hue0.h, 0, 0.01, "Hue should be 0");
+  assertAlmostEquals(hue0.c, 0.1, 0.001, "Chroma should be 0.1");
+
+  // Zero a, positive b → h=90
+  const hue90 = oklab2oklch({ l: 0.5, a: 0, b: 0.1 });
+  assertAlmostEquals(hue90.h, 90, 0.01, "Hue should be 90");
+
+  // Negative a, zero b → h=180
+  const hue180 = oklab2oklch({ l: 0.5, a: -0.1, b: 0 });
+  assertAlmostEquals(hue180.h, 180, 0.01, "Hue should be 180");
+
+  // Zero a, negative b → h=270
+  const hue270 = oklab2oklch({ l: 0.5, a: 0, b: -0.1 });
+  assertAlmostEquals(hue270.h, 270, 0.01, "Hue should be 270");
+});
+
+test("oklab2oklch -> oklch2oklab round-trip", () => {
+  const testValues: Oklab[] = [
+    { l: 0.5, a: 0.1, b: 0.05 },
+    { l: 0.8, a: -0.1, b: 0.1 },
+    { l: 0.3, a: 0.05, b: -0.1 },
+    { l: 0.6, a: 0, b: 0 }, // Achromatic
+  ];
+
+  for (const oklab of testValues) {
+    const oklch = oklab2oklch(oklab);
+    const back = oklch2oklab(oklch);
+    assertAlmostEquals(back.l, oklab.l, 1e-6, `L for ${JSON.stringify(oklab)}`);
+    assertAlmostEquals(back.a, oklab.a, 1e-6, `a for ${JSON.stringify(oklab)}`);
+    assertAlmostEquals(back.b, oklab.b, 1e-6, `b for ${JSON.stringify(oklab)}`);
+  }
+});
+
+test("rgb2oklch convenience function", () => {
+  // Should match rgb2oklab + oklab2oklch
+  const rgb: Rgb = { r: 200, g: 100, b: 50 };
+  const direct = rgb2oklch(rgb);
+  const viaOklab = oklab2oklch(rgb2oklab(rgb));
+
+  assertAlmostEquals(direct.l, viaOklab.l, 1e-10);
+  assertAlmostEquals(direct.c, viaOklab.c, 1e-10);
+  assertAlmostEquals(direct.h, viaOklab.h, 1e-10);
+});
+
+test("oklch2rgb convenience function", () => {
+  // Should match oklch2oklab + oklab2rgb
+  const oklch: Oklch = { l: 0.7, c: 0.15, h: 45 };
+  const direct = oklch2rgb(oklch);
+  const viaOklab = oklab2rgb(oklch2oklab(oklch));
+
+  assertAlmostEquals(direct.r, viaOklab.r, 1e-10);
+  assertAlmostEquals(direct.g, viaOklab.g, 1e-10);
+  assertAlmostEquals(direct.b, viaOklab.b, 1e-10);
+});
+
+test("oklch gray neutrality", () => {
+  // Grays should have c ≈ 0
+  for (const g of [64, 128, 192]) {
+    const oklch = rgb2oklch({ r: g, g: g, b: g });
+    assertAlmostEquals(oklch.c, 0, 0.001, `Gray ${g} chroma should be 0`);
+  }
+});
+
+// ============================================================================
+// CSS Output Functions Tests
+// ============================================================================
+
+test("oklab2css - format", () => {
+  const css = oklab2css({ l: 0.6283, a: 0.2248, b: 0.1265 });
+  expect(css).toBe("oklab(0.6283 0.2248 0.1265)");
+});
+
+test("oklch2css - format", () => {
+  const css = oklch2css({ l: 0.6283, c: 0.2579, h: 29.23 });
+  expect(css).toBe("oklch(0.6283 0.2579 29.23)");
+});
+
+test("labD502css - format", () => {
+  const css = labD502css({ l: 54.29, a: 80.81, b: 69.89 });
+  expect(css).toBe("lab(54.29% 80.81 69.89)");
+});
+
+test("lchD502css - format", () => {
+  const css = lchD502css({ l: 54.29, c: 106.84, h: 40.85 });
+  expect(css).toBe("lch(54.29% 106.84 40.85)");
 });
