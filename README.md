@@ -158,6 +158,34 @@ Both are cylindrical (Lightness, Chroma, Hue) representations but differ in thei
 
 **When to use LCH?** Compatibility with existing Lab workflows, ICC profiles, or tools that expect CIE Lab values.
 
+## Color Difference (ΔE)
+
+Functions to measure perceptual distance between colors:
+
+| Function      | Description                              |
+| ------------- | ---------------------------------------- |
+| `deltaE76`    | CIE76 - Euclidean in Lab (fast)          |
+| `deltaE94`    | CIE94 - weighted for graphics/textiles   |
+| `deltaE2000`  | CIEDE2000 - industry standard (accurate) |
+| `deltaEOk`    | Euclidean in Oklab (modern, simple)      |
+
+```ts
+import { rgb2lab, rgb2oklab, deltaE76, deltaE2000, deltaEOk } from 'precise-colors'
+
+const red = rgb2lab({ r: 255, g: 0, b: 0 })
+const orange = rgb2lab({ r: 255, g: 128, b: 0 })
+
+deltaE76(red, orange)    // ~55.6 (simple Euclidean)
+deltaE2000(red, orange)  // ~32.4 (perceptually weighted)
+
+// Oklab alternative
+const redOk = rgb2oklab({ r: 255, g: 0, b: 0 })
+const orangeOk = rgb2oklab({ r: 255, g: 128, b: 0 })
+deltaEOk(redOk, orangeOk)  // ~0.14
+```
+
+**ΔE interpretation**: 0 = identical, 1 ≈ just noticeable, 2-10 = perceptible at glance, 100 = opposite colors.
+
 ## Type Safety
 
 `LabD65` and `LabD50` are branded types that prevent mixing illuminants:

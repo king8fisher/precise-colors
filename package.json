@@ -1,8 +1,8 @@
 {
   "name": "precise-colors",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": false,
-  "description": "This library converts colors between various models without performing any rounding.",
+  "description": "Color conversions and Delta E functions without intermediate rounding",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -21,9 +21,14 @@
     "prepublishOnly": "bun run build"
   },
   "keywords": [
-    "colors",
-    "round",
-    "conversion"
+    "color",
+    "conversion",
+    "deltaE",
+    "CIEDE2000",
+    "oklab",
+    "oklch",
+    "lab",
+    "precision"
   ],
   "author": "Anton Veretennikov (king8fisher)",
   "license": "MIT",

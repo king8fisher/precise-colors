@@ -1544,3 +1544,6 @@ export const xyz2labD65 = xyz2lab;
 
 /** Alias for {@link gray2lab} with explicit D65 naming. */
 export const gray2labD65 = gray2lab;
+
+// Re-export delta-e functions
+export { deltaE76, deltaE94, deltaE2000, deltaEOk } from "./delta-e";
