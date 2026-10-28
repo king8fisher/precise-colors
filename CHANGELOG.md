@@ -36,3 +36,8 @@ only in the git history.
 - `roundTo` mishandled numbers that JavaScript prints in exponent form:
   `roundTo(5e-7, 6)` returned `0` instead of `0.000001`, and `roundTo(1e21, 2)`
   and `roundTo(Infinity, 2)` returned `NaN`.
+- Converting back to RGB (`xyz2rgb`, `lab2rgb`, `labD502rgb`, `oklab2rgb`,
+  `oklch2rgb`) used published inverse matrices that are rounded separately from
+  the forward ones, so round trips such as `lab2rgb(rgb2lab(rgb))` drifted by up
+  to 4e-4 per channel. The inverses are now exact, and round trips are accurate
+  to about 1e-11. The forward conversions are unchanged.

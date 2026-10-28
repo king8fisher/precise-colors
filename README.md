@@ -87,14 +87,17 @@ rgb2css(rgb)             // "rgb(128,64,192)"
 
 Round-trip precision verified across all 16,777,216 RGB colors:
 
-| Conversion      | Max Error |
-| --------------- | --------- |
-| RGB → HSL → RGB | < 0.01    |
-| RGB → HSV → RGB | < 0.01    |
-| RGB → HWB → RGB | < 0.01    |
-| RGB → HCG → RGB | < 0.01    |
-| RGB → Lab → RGB | < 0.001   |
-| Lab → LCH → Lab | < 1e-6    |
+| Conversion        | Max Error |
+| ----------------- | --------- |
+| RGB → HSL → RGB   | < 1e-12   |
+| RGB → HSV → RGB   | < 1e-12   |
+| RGB → HWB → RGB   | < 1e-12   |
+| RGB → HCG → RGB   | < 1e-12   |
+| RGB → XYZ → RGB   | < 1e-11   |
+| RGB → Lab → RGB   | < 1e-11   |
+| RGB → LabD50 → RGB | < 1e-11  |
+| RGB → Oklab → RGB | < 1e-10   |
+| Lab → LCH → Lab   | < 1e-12   |
 
 ## Standards Compliance
 

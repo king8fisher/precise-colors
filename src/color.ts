@@ -1057,13 +1057,15 @@ const SRGB_TO_XYZ = {
 
 /**
  * XYZ to sRGB transformation matrix (D65).
- * IEC 61966-2-1 standard inverse matrix.
+ * Exact inverse of {@link SRGB_TO_XYZ} in double precision. The published 7-digit
+ * inverse (3.2404542, …) is not an exact inverse of the 7-digit forward matrix and
+ * made RGB → XYZ → RGB round-trips drift by up to 4e-4.
  * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
  */
 const XYZ_TO_SRGB = {
-  rx: 3.2404542, ry: -1.5371385, rz: -0.4985314,
-  gx: -0.9692660, gy: 1.8760108, gz: 0.0415560,
-  bx: 0.0556434, by: -0.2040259, bz: 1.0572252,
+  rx: 3.240454836021409, ry: -1.5371388501025753, rz: -0.498531546868481,
+  gx: -0.9692663898756538, gy: 1.8760109288424913, gz: 0.041556082346673524,
+  bx: 0.05564341960421366, by: -0.20402585426769815, bz: 1.0572251624579287,
 };
 
 /**
@@ -1091,12 +1093,13 @@ const SRGB_TO_XYZ_D50 = {
 /**
  * XYZ to sRGB transformation matrix (Bradford-adapted from D50).
  * For CSS Color 4 Lab compatibility.
+ * Exact inverse of {@link SRGB_TO_XYZ_D50} in double precision.
  * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
  */
 const XYZ_D50_TO_SRGB = {
-  rx: 3.1338561, ry: -1.6168667, rz: -0.4906146,
-  gx: -0.9787684, gy: 1.9161415, gz: 0.0334540,
-  bx: 0.0719453, by: -0.2289914, bz: 1.4052427,
+  rx: 3.133856367791652, ry: -1.6168667702911803, rz: -0.4906147727983015,
+  gx: -0.9787685631270268, gy: 1.9161415526243253, gz: 0.03345411630253724,
+  bx: 0.0719451682817343, by: -0.22899127729888244, bz: 1.4052426741535713,
 };
 
 /**
@@ -1121,22 +1124,24 @@ const LMS_TO_OKLAB = {
 
 /**
  * Oklab to LMS (before cubing) matrix - inverse of LMS_TO_OKLAB.
+ * Exact inverse in double precision; the published 10-digit inverse is off by up to 6e-8.
  * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
  */
 const OKLAB_TO_LMS = {
-  ll: 1.0000000000, lm: 0.3963377774, ls: 0.2158037573,
-  ml: 1.0000000000, mm: -0.1055613458, ms: -0.0638541728,
-  sl: 1.0000000000, sm: -0.0894841775, ss: -1.2914855480,
+  ll: 0.9999999984505199, lm: 0.39633779217376786, ls: 0.2158037580607588,
+  ml: 1.0000000088817607, mm: -0.10556134232365634, ms: -0.0638541747717059,
+  sl: 1.000000054672411, sm: -0.08948418209496577, ss: -1.291485537864092,
 };
 
 /**
  * LMS to linear sRGB matrix - inverse of SRGB_TO_LMS.
+ * Exact inverse in double precision.
  * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
  */
 const LMS_TO_SRGB = {
-  rl: 4.0767416621, rm: -3.3077115913, rs: 0.2309699292,
-  gl: -1.2684380046, gm: 2.6097574011, gs: -0.3413193965,
-  bl: -0.0041960863, bm: -0.7034186147, bs: 1.7076147010,
+  rl: 4.076741661347994, rm: -3.3077115904081933, rs: 0.23096992872942784,
+  gl: -1.268438004092176, gm: 2.6097574006633715, gs: -0.34131939631021946,
+  bl: -0.004196086541837046, bm: -0.7034186144594494, bs: 1.7076147009309446,
 };
 
 /**
@@ -1492,9 +1497,9 @@ export function xyz2rgb(xyz: Xyz): Rgb {
   let r: number;
   let g: number;
   let b: number;
-  r = (x * 3.2404542) + (y * -1.5371385) + (z * -0.4985314);
-  g = (x * -0.969266) + (y * 1.8760108) + (z * 0.041556);
-  b = (x * 0.0556434) + (y * -0.2040259) + (z * 1.0572252);
+  r = x * XYZ_TO_SRGB.rx + y * XYZ_TO_SRGB.ry + z * XYZ_TO_SRGB.rz;
+  g = x * XYZ_TO_SRGB.gx + y * XYZ_TO_SRGB.gy + z * XYZ_TO_SRGB.gz;
+  b = x * XYZ_TO_SRGB.bx + y * XYZ_TO_SRGB.by + z * XYZ_TO_SRGB.bz;
 
   if (r > 0.0031308) {
     r = (1.055 * Math.pow(r, 1.0 / 2.4)) - 0.055;

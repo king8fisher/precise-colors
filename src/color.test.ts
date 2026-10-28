@@ -117,8 +117,8 @@ test("rgb -> hsl -> hcg -> rgb", () => {
 
 test("rgb -> lab -> xyz -> rgb", () => {
   // Full 16.7M color round-trip through Lab color space
-  // Max error ~1e-4 (0.0001) per RGB channel - excellent precision
-  // Enabled after switching to exact CIE constants (216/24389, 24389/27)
+  // Max error ~4e-12 per RGB channel: exact CIE constants (216/24389, 24389/27)
+  // and XYZ_TO_SRGB being the exact inverse of SRGB_TO_XYZ
   for (let r = 0; r < 256; r++) {
     for (let g = 0; g < 256; g++) {
       for (let b = 0; b < 256; b++) {
@@ -127,9 +127,25 @@ test("rgb -> lab -> xyz -> rgb", () => {
         const lyz = lab2lyz(lab);
         // Lyz uses 'l' for X coordinate (convert to Xyz)
         const back = xyz2rgb({ x: lyz.l, y: lyz.y, z: lyz.z });
-        assertAlmostEquals(back.r, rgb.r, 1e-3);
-        assertAlmostEquals(back.g, rgb.g, 1e-3);
-        assertAlmostEquals(back.b, rgb.b, 1e-3);
+        assertAlmostEquals(back.r, rgb.r, 1e-9);
+        assertAlmostEquals(back.g, rgb.g, 1e-9);
+        assertAlmostEquals(back.b, rgb.b, 1e-9);
+      }
+    }
+  }
+});
+
+test("matrix round-trips are exact to double precision (inverse matrices are exact inverses)", () => {
+  for (let r = 0; r < 256; r += 3) {
+    for (let g = 0; g < 256; g += 3) {
+      for (let b = 0; b < 256; b += 3) {
+        const rgb: Rgb = { r, g, b };
+        const msg = JSON.stringify(rgb);
+        assertAlmostEqualsColor(xyz2rgb(rgb2xyz(rgb)), rgb, 1e-9, "xyz " + msg);
+        assertAlmostEqualsColor(lab2rgb(rgb2lab(rgb)), rgb, 1e-9, "lab " + msg);
+        assertAlmostEqualsColor(labD502rgb(rgb2labD50(rgb)), rgb, 1e-9, "labD50 " + msg);
+        assertAlmostEqualsColor(oklab2rgb(rgb2oklab(rgb)), rgb, 1e-9, "oklab " + msg);
+        assertAlmostEqualsColor(oklch2rgb(rgb2oklch(rgb)), rgb, 1e-9, "oklch " + msg);
       }
     }
   }
