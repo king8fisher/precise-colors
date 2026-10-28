@@ -18,6 +18,11 @@ only in the git history.
   longer be mistaken for `#000000`. Its return type is now `Rgb | null`; use
   `hex2rgb(x) ?? fallback`, or `hex2rgb(x)!` when the input is known to be valid.
 
+### Added
+
+- `rgb2hsv`, a direct RGB → HSV conversion (previously only available through
+  `hsl2hsv(rgb2hsl(rgb))`, which gives the same result).
+
 ## [1.2.0] - 2026-10-28
 
 ### Added

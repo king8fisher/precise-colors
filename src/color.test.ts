@@ -45,6 +45,7 @@ import {
   rgb2hex,
   rgb2str,
   rgb2hsl,
+  rgb2hsv,
   rgb2hwb,
   rgb2lab,
   rgb2labD50,
@@ -729,6 +730,41 @@ test("hsl2hsv - boundary conditions", () => {
   // Full saturation at l=100 (white with saturation - edge case)
   const hsv2 = hsl2hsv({ h: 360, s: 100, l: 100 });
   expect(Number.isFinite(hsv2.v)).toBe(true);
+});
+
+test("rgb2hsv - reference values", () => {
+  assertAlmostEqualsColor(rgb2hsv({ r: 0, g: 0, b: 0 }), { h: 0, s: 0, v: 0 });
+  assertAlmostEqualsColor(rgb2hsv({ r: 255, g: 255, b: 255 }), { h: 0, s: 0, v: 100 });
+  assertAlmostEqualsColor(rgb2hsv({ r: 128, g: 128, b: 128 }), { h: 0, s: 0, v: 50.2 }, 0.01);
+  assertAlmostEqualsColor(rgb2hsv({ r: 255, g: 0, b: 0 }), { h: 0, s: 100, v: 100 });
+  assertAlmostEqualsColor(rgb2hsv({ r: 0, g: 255, b: 0 }), { h: 120, s: 100, v: 100 });
+  assertAlmostEqualsColor(rgb2hsv({ r: 0, g: 0, b: 255 }), { h: 240, s: 100, v: 100 });
+  assertAlmostEqualsColor(rgb2hsv({ r: 169, g: 104, b: 54 }), { h: 26.09, s: 68.05, v: 66.27 }, 0.01);
+});
+
+test("rgb -> hsv -> rgb", () => {
+  for (let r = 0; r < 256; r++) {
+    for (let g = 0; g < 256; g++) {
+      for (let b = 0; b < 256; b++) {
+        const rgb: Rgb = { r: r, g: g, b: b };
+        const back = hsv2rgb(rgb2hsv(rgb));
+        assertAlmostEquals(back.r, rgb.r);
+        assertAlmostEquals(back.g, rgb.g);
+        assertAlmostEquals(back.b, rgb.b);
+      }
+    }
+  }
+});
+
+test("rgb2hsv matches rgb2hsl -> hsl2hsv", () => {
+  for (let r = 0; r < 256; r += 3) {
+    for (let g = 0; g < 256; g += 3) {
+      for (let b = 0; b < 256; b += 3) {
+        const rgb: Rgb = { r: r, g: g, b: b };
+        assertAlmostEqualsColor(rgb2hsv(rgb), hsl2hsv(rgb2hsl(rgb)));
+      }
+    }
+  }
 });
 
 test("gray conversions - consistency across color spaces", () => {

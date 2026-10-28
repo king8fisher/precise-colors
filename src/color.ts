@@ -528,11 +528,7 @@ export function hsl2hsv(hsl: Hsl): Hsv {
   } else {
     s *= 2 - l;
   }
-  if (lmin <= 1) {
-    smin *= lmin;
-  } else {
-    smin *= 2 - lmin;
-  }
+  smin *= lmin; // only used when l == 0, where lmin is 0.01
   const v = (l + s) / 2;
   let sv: number;
   if (l === 0) {
@@ -769,6 +765,20 @@ export function rgb2hsl(rgb: Rgb): Hsl {
   }
 
   return { h: h, s: s * 100, l: l * 100 };
+}
+
+/**
+ * Converts {@link Rgb} to {@link Hsv}.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @returns color - {@link Hsv}, h `[0..360]`, s/v `[0..100]`
+ */
+export function rgb2hsv(rgb: Rgb): Hsv {
+  const h = rgb2hsl(rgb).h;
+  const max = Math.max(rgb.r, Math.max(rgb.g, rgb.b));
+  const min = Math.min(rgb.r, Math.min(rgb.g, rgb.b));
+  const s = max == 0 ? 0 : (max - min) / max;
+
+  return { h: h, s: s * 100, v: max / 255 * 100 };
 }
 
 /**
