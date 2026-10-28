@@ -33,3 +33,6 @@ only in the git history.
   as they already did in `hsv2rgb` and `hcg2rgb`.
 - `modulo` no longer loses precision on values that are already in range:
   `modulo(0.1, 360)` returned `0.10000000000002274` and now returns `0.1`.
+- `roundTo` mishandled numbers that JavaScript prints in exponent form:
+  `roundTo(5e-7, 6)` returned `0` instead of `0.000001`, and `roundTo(1e21, 2)`
+  and `roundTo(Infinity, 2)` returned `NaN`.

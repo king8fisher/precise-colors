@@ -150,6 +150,18 @@ test("roundTo", () => {
   expect(roundTo(1.3549999999999998, 3)).toBe(1.355);
 });
 
+test("roundTo - numbers that print in exponent form", () => {
+  expect(roundTo(5e-7, 6)).toBe(0.000001);
+  expect(roundTo(1.5e-7, 7)).toBe(2e-7);
+  expect(roundTo(1.23456e-10, 12)).toBe(1.23e-10);
+  expect(roundTo(1e-12, 4)).toBe(0);
+  expect(roundTo(1e21, 2)).toBe(1e21);
+  expect(roundTo(1.5e300, 2)).toBe(1.5e300);
+  expect(roundTo(Infinity, 2)).toBe(Infinity);
+  expect(roundTo(-Infinity, 2)).toBe(-Infinity);
+  expect(roundTo(NaN, 2)).toBeNaN();
+});
+
 test("basics rgb -> hsl", () => {
   // Black
   assertAlmostEqualsColor(rgb2hsl({ r: 0, g: 0, b: 0 }), { h: 0, s: 0, l: 0 }, 0.01);

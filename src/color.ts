@@ -257,8 +257,15 @@ export interface Oklch {
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/toFixed|Number.toFixed} for string output
  */
 export function roundTo(num: number, places: number) {
-  return +(Math.round(parseFloat(num.toString() + "e+" + places)) + "e-" +
-    places);
+  if (!isFinite(num)) {
+    return num;
+  }
+  // Shift the decimal point by editing the exponent of the string form. Splitting
+  // on "e" keeps numbers that already print as exponents (5e-7, 1e21) correct.
+  const [mantissa, exponent] = num.toString().split("e");
+  const rounded = Math.round(+(mantissa + "e" + (+(exponent || 0) + places)));
+  const [rMantissa, rExponent] = rounded.toString().split("e");
+  return +(rMantissa + "e" + (+(rExponent || 0) - places));
 }
 
 /**
