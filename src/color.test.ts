@@ -20,6 +20,7 @@ import {
   hsl2hsv,
   hsl2rgb,
   hsv2rgb,
+  hwb2css,
   hwb2rgb,
   lab2lch,
   lab2lyz,
@@ -209,6 +210,11 @@ test("gray2hex", () => {
   expect(gray2hex(100)).toBe("ffffff");
   expect(gray2hex(-10)).toBe("000000");
   expect(gray2hex(120)).toBe("ffffff");
+});
+
+test("hwb2css - space-separated syntax (hwb() has no comma form)", () => {
+  expect(hwb2css({ h: 194.5, w: 12.345, b: 0 })).toBe("hwb(194.5deg 12.35% 0%)");
+  expect(hwb2css({ h: 0, w: 0, b: 100 })).toBe("hwb(0deg 0% 100%)");
 });
 
 test("hex2rgb - accepted formats", () => {

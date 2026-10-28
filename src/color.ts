@@ -313,10 +313,12 @@ export function hsl2css(hsl: Hsl) {
 /**
  * Converts {@link Hwb} to CSS hwb() string.
  * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
- * @returns CSS string `"hwb(hdeg,w%,b%)"` (rounded to 2 decimals)
+ * @returns CSS string `"hwb(hdeg w% b%)"` (rounded to 2 decimals). hwb() has no
+ * comma-separated legacy syntax.
+ * @see {@link https://www.w3.org/TR/css-color-4/#the-hwb-notation|W3C CSS Color 4}
  */
 export function hwb2css(hwb: Hwb) {
-  return `hwb(${roundTo(hwb.h, 2)}deg,${roundTo(hwb.w, 2)}%,${roundTo(hwb.b, 2)
+  return `hwb(${roundTo(hwb.h, 2)}deg ${roundTo(hwb.w, 2)}% ${roundTo(hwb.b, 2)
     }%)`;
 }
 

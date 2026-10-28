@@ -22,3 +22,5 @@ only in the git history.
   channels. It now accepts an optional `#`, 3- and 6-digit forms, and 4- and
   8-digit forms (the alpha byte is ignored). Malformed input such as `"12zz56"`
   now returns black instead of a partly parsed colour.
+- `hwb2css` returned comma-separated `hwb(0deg,0%,0%)`, which browsers reject:
+  CSS `hwb()` has no comma syntax. It now returns `hwb(0deg 0% 0%)`.
