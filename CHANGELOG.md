@@ -17,3 +17,8 @@ only in the git history.
   `[0..255]` (e.g. `{ r: -3 }` gave `"-30000"`, `{ r: 256 }` gave `"1000000"`).
   Channels are now clamped, so out-of-gamut results such as
   `rgb2hex(lab2rgb({ l: 60, a: 120, b: 100 }))` give `"ff0000"`.
+- `hex2rgb` misread common hex formats: `"#3399cc"` and `"#39c"` returned black,
+  `"fff"` returned `{ r: 0, g: 15, b: 255 }`, and `"3399ccff"` shifted the
+  channels. It now accepts an optional `#`, 3- and 6-digit forms, and 4- and
+  8-digit forms (the alpha byte is ignored). Malformed input such as `"12zz56"`
+  now returns black instead of a partly parsed colour.

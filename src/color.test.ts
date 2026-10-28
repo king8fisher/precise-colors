@@ -15,6 +15,7 @@ import {
   gray2lab,
   gray2rgb,
   hcg2rgb,
+  hex2rgb,
   hsl2hcg,
   hsl2hsv,
   hsl2rgb,
@@ -208,6 +209,45 @@ test("gray2hex", () => {
   expect(gray2hex(100)).toBe("ffffff");
   expect(gray2hex(-10)).toBe("000000");
   expect(gray2hex(120)).toBe("ffffff");
+});
+
+test("hex2rgb - accepted formats", () => {
+  const expected = { r: 51, g: 153, b: 204 };
+  expect(hex2rgb("3399cc")).toEqual(expected);
+  expect(hex2rgb("#3399cc")).toEqual(expected);
+  expect(hex2rgb("3399CC")).toEqual(expected);
+  expect(hex2rgb("  #3399cc\n")).toEqual(expected);
+  expect(hex2rgb("39c")).toEqual(expected);
+  expect(hex2rgb("#39C")).toEqual(expected);
+  // Alpha byte is ignored
+  expect(hex2rgb("3399ccff")).toEqual(expected);
+  expect(hex2rgb("#3399cc00")).toEqual(expected);
+  expect(hex2rgb("#39cf")).toEqual(expected);
+  expect(hex2rgb("fff")).toEqual({ r: 255, g: 255, b: 255 });
+  expect(hex2rgb("000000")).toEqual({ r: 0, g: 0, b: 0 });
+});
+
+test("hex2rgb - invalid input returns black", () => {
+  const black = { r: 0, g: 0, b: 0 };
+  for (const input of [
+    "", " ", "#", "##3399cc", "12zz56", "3399c", "3399ccf", "3399ccfff",
+    "#3399cc00ff", "0x3399cc", "-3399cc", "+39c", "#3399cc ff", "3399 cc", "1",
+  ]) {
+    expect(hex2rgb(input)).toEqual(black);
+  }
+  for (const input of [undefined, null, 0x3399cc, {}, ["3399cc"]]) {
+    expect(hex2rgb(input as unknown as string)).toEqual(black);
+  }
+});
+
+test("hex2rgb -> rgb2hex round-trip", () => {
+  for (let v = 0; v < 256; v++) {
+    for (const rgb of [{ r: v, g: 0, b: 0 }, { r: 0, g: v, b: 0 }, { r: 0, g: 0, b: v }, { r: v, g: 255 - v, b: v }]) {
+      const hex = rgb2hex(rgb);
+      expect(hex2rgb(hex)).toEqual(rgb);
+      expect(hex2rgb("#" + hex)).toEqual(rgb);
+    }
+  }
 });
 
 test("basics rgb -> cmyk", () => {

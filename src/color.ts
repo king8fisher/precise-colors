@@ -392,14 +392,23 @@ export function gray2hex(gray: number): string {
 
 /**
  * Parses hex string to {@link Rgb}.
- * @param input - Hex string (6 digits, without #)
- * @returns color - {@link Rgb}, r/g/b `[0..255]`
+ * Accepts an optional leading `#`, 3/6-digit forms, and 4/8-digit forms whose
+ * alpha byte is ignored. Surrounding whitespace is trimmed.
+ * @param input - Hex string, e.g. `"3399cc"`, `"#3399cc"`, `"#39c"`, `"3399ccff"`
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`; black if `input` is not a valid hex color
  */
 export function hex2rgb(input: string): Rgb {
-  const value: number = parseInt(input, 16);
-  if (isNaN(value)) {
+  if (typeof input !== "string") {
     return { r: 0, g: 0, b: 0 };
   }
+  let hex = input.trim().replace(/^#/, "");
+  if (/^[0-9a-f]{3,4}$/i.test(hex)) {
+    hex = hex.split("").map((c) => c + c).join("");
+  }
+  if (!/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(hex)) {
+    return { r: 0, g: 0, b: 0 };
+  }
+  const value = parseInt(hex.slice(0, 6), 16);
   return {
     r: (value >> 16) & 0xFF,
     g: (value >> 8) & 0xFF,
