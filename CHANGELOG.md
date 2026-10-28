@@ -12,6 +12,16 @@ only in the git history.
 - The package now includes this CHANGELOG.
 - `rgb2str` takes an optional separator: `rgb2str(rgb, " ")` gives `"r g b"`.
   The default is still `","`.
+- Every `*2css` function takes an optional `alpha` (`0..1`, printed with 2
+  decimals). `rgb2css(rgb, 0.5)` returns `rgba(r,g,b,0.5)` and
+  `hsl2css(hsl, 0.5)` returns `hsla(…,0.5)`; `hwb2css`, `oklab2css`,
+  `oklch2css`, `labD502css` and `lchD502css` append ` / 0.5`. Without `alpha`
+  the output is unchanged.
+
+### Deprecated
+
+- `rgba2css`: use `rgb2css(rgb, alpha)`, which returns the same string.
+  `rgba2css` will be removed in 2.0.
 
 ### Fixed
 

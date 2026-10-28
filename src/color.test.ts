@@ -18,6 +18,7 @@ import {
   hex2rgb,
   hsl2hcg,
   hsl2hsv,
+  hsl2css,
   hsl2rgb,
   hsv2rgb,
   hwb2css,
@@ -39,6 +40,8 @@ import {
   oklch2rgb,
   Rgb,
   rgb2cmyk,
+  rgb2css,
+  rgba2css,
   rgb2hex,
   rgb2str,
   rgb2hsl,
@@ -289,6 +292,24 @@ test("hwb2hcg -> hcg2rgb matches hwb2rgb", () => {
       }
     }
   }
+});
+
+test("*2css - optional alpha", () => {
+  const rgb = { r: 128, g: 64, b: 192 };
+  expect(rgb2css(rgb)).toBe("rgb(128,64,192)");
+  expect(rgb2css(rgb, 0.456)).toBe("rgba(128,64,192,0.46)");
+  expect(rgb2css(rgb, 1)).toBe("rgba(128,64,192,1)");
+  expect(rgb2css(rgb, 0)).toBe("rgba(128,64,192,0)");
+  expect(rgba2css(rgb, 0.456)).toBe(rgb2css(rgb, 0.456)); // deprecated alias, same output
+  const hsl = { h: 26.094, s: 51.574, l: 43.725 };
+  expect(hsl2css(hsl)).toBe("hsl(26.09deg,51.57%,43.73%)");
+  expect(hsl2css(hsl, 0.5)).toBe("hsla(26.09deg,51.57%,43.73%,0.5)");
+  expect(hwb2css({ h: 194.5, w: 12.345, b: 0 }, 0.25)).toBe("hwb(194.5deg 12.35% 0% / 0.25)");
+  expect(oklab2css({ l: 0.6283, a: 0.2248, b: 0.1265 }, 0)).toBe("oklab(0.6283 0.2248 0.1265 / 0)");
+  expect(oklch2css({ l: 0.6283, c: 0.2579, h: 29.23 }, 0.8)).toBe("oklch(0.6283 0.2579 29.23 / 0.8)");
+  expect(oklch2css(rgb2oklch({ r: 255, g: 255, b: 255 }), 0.5)).toBe("oklch(1 0 0 / 0.5)");
+  expect(labD502css({ l: 54.29, a: 80.81, b: 69.89 }, 0.5)).toBe("lab(54.29% 80.81 69.89 / 0.5)");
+  expect(lchD502css({ l: 54.29, c: 106.84, h: 40.85 }, 0.123)).toBe("lch(54.29% 106.84 40.85 / 0.12)");
 });
 
 test("rgb2str - optional separator", () => {

@@ -285,11 +285,23 @@ export function modulo(x: number, n: number): number {
 }
 
 /**
- * Converts {@link Rgb} to CSS rgb() string.
- * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns CSS string `"rgb(r,g,b)"` (rounded)
+ * Formats an optional alpha as the `" / a"` suffix of the space-separated CSS syntax
+ * (rounded to 2 decimals), or `""` when it is omitted.
  */
-export function rgb2css(rgb: Rgb): string {
+function cssAlpha(alpha: number | undefined): string {
+  return alpha === undefined ? "" : ` / ${roundTo(alpha, 2)}`;
+}
+
+/**
+ * Converts {@link Rgb} to CSS rgb() string, or rgba() when `alpha` is given.
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
+ * @returns CSS string `"rgb(r,g,b)"`, or `"rgba(r,g,b,a)"` with `alpha` (rounded)
+ */
+export function rgb2css(rgb: Rgb, alpha?: number): string {
+  if (alpha !== undefined) {
+    return `rgba(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)},${roundTo(alpha, 2)})`;
+  }
   return `rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
 }
 
@@ -305,68 +317,75 @@ export function rgb2str(rgb: Rgb, sep: string = ","): string {
 
 /**
  * Converts {@link Rgb} and alpha to CSS rgba() string.
+ * @deprecated Use {@link rgb2css} with its `alpha` argument, which returns the same
+ * string: `rgb2css(rgb, alpha)`. `rgba2css` will be removed in 2.0.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
  * @param alpha - Alpha `[0..1]`
  * @returns CSS string `"rgba(r,g,b,a)"` (rounded)
  */
 export function rgba2css(rgb: Rgb, alpha: number): string {
-  return `rgba(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)},${roundTo(alpha, 2)
-    })`;
+  return rgb2css(rgb, alpha);
 }
 
 /**
- * Converts {@link Hsl} to CSS hsl() string.
+ * Converts {@link Hsl} to CSS hsl() string, or hsla() when `alpha` is given.
  * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
- * @returns CSS string `"hsl(hdeg,s%,l%)"` (rounded to 2 decimals)
+ * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
+ * @returns CSS string `"hsl(hdeg,s%,l%)"`, or `"hsla(hdeg,s%,l%,a)"` with `alpha`
+ * (rounded to 2 decimals)
  */
-export function hsl2css(hsl: Hsl) {
-  return `hsl(${roundTo(hsl.h, 2)}deg,${roundTo(hsl.s, 2)}%,${roundTo(hsl.l, 2)
-    }%)`;
+export function hsl2css(hsl: Hsl, alpha?: number) {
+  const hsl3 = `${roundTo(hsl.h, 2)}deg,${roundTo(hsl.s, 2)}%,${roundTo(hsl.l, 2)}%`;
+  return alpha === undefined ? `hsl(${hsl3})` : `hsla(${hsl3},${roundTo(alpha, 2)})`;
 }
 
 /**
  * Converts {@link Hwb} to CSS hwb() string.
  * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"hwb(hdeg w% b%)"` (rounded to 2 decimals). hwb() has no
  * comma-separated legacy syntax.
  * @see {@link https://www.w3.org/TR/css-color-4/#the-hwb-notation|W3C CSS Color 4}
  */
-export function hwb2css(hwb: Hwb) {
+export function hwb2css(hwb: Hwb, alpha?: number) {
   return `hwb(${roundTo(hwb.h, 2)}deg ${roundTo(hwb.w, 2)}% ${roundTo(hwb.b, 2)
-    }%)`;
+    }%${cssAlpha(alpha)})`;
 }
 
 /**
  * Converts {@link Oklab} to CSS oklab() string.
  * @param oklab - {@link Oklab} color, l `[0..1]`, a/b `[-0.4..0.4]`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"oklab(l a b)"` (rounded to 4 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#ok-lab|W3C CSS Color 4}
  */
-export function oklab2css(oklab: Oklab): string {
-  return `oklab(${roundTo(oklab.l, 4)} ${roundTo(oklab.a, 4)} ${roundTo(oklab.b, 4)})`;
+export function oklab2css(oklab: Oklab, alpha?: number): string {
+  return `oklab(${roundTo(oklab.l, 4)} ${roundTo(oklab.a, 4)} ${roundTo(oklab.b, 4)}${cssAlpha(alpha)})`;
 }
 
 /**
  * Converts {@link Oklch} to CSS oklch() string.
  * @param oklch - {@link Oklch} color, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"oklch(l c h)"` (rounded to 4 decimals for l/c, 2 for h)
  * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
  */
-export function oklch2css(oklch: Oklch): string {
+export function oklch2css(oklch: Oklch, alpha?: number): string {
   const c = roundTo(oklch.c, 4);
   // Without chroma the hue is floating-point noise (white gives ~89.88), so print 0
   const h = c === 0 ? 0 : roundTo(oklch.h, 2);
-  return `oklch(${roundTo(oklch.l, 4)} ${c} ${h})`;
+  return `oklch(${roundTo(oklch.l, 4)} ${c} ${h}${cssAlpha(alpha)})`;
 }
 
 /**
  * Converts {@link LabD50} to CSS lab() string.
  * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"lab(l% a b)"` (rounded to 2 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
  */
-export function labD502css(lab: LabD50): string {
-  return `lab(${roundTo(lab.l, 2)}% ${roundTo(lab.a, 2)} ${roundTo(lab.b, 2)})`;
+export function labD502css(lab: LabD50, alpha?: number): string {
+  return `lab(${roundTo(lab.l, 2)}% ${roundTo(lab.a, 2)} ${roundTo(lab.b, 2)}${cssAlpha(alpha)})`;
 }
 
 /**
@@ -375,14 +394,15 @@ export function labD502css(lab: LabD50): string {
  * `lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and
  * prints a different colour.
  * @param lch - {@link Lch} color (from D50 Lab), l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"lch(l% c h)"` (rounded to 2 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
  */
-export function lchD502css(lch: Lch): string {
+export function lchD502css(lch: Lch, alpha?: number): string {
   const c = roundTo(lch.c, 2);
   // Without chroma the hue is floating-point noise, so print 0
   const h = c === 0 ? 0 : roundTo(lch.h, 2);
-  return `lch(${roundTo(lch.l, 2)}% ${c} ${h})`;
+  return `lch(${roundTo(lch.l, 2)}% ${c} ${h}${cssAlpha(alpha)})`;
 }
 
 /**

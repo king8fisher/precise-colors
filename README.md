@@ -143,7 +143,9 @@ oklab2css(oklab)  // "oklab(0.7349 0.1219 0.1223)"
 oklch2css(oklch)  // "oklch(0.7349 0.1726 45.09)"
 ```
 
-CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css`.
+CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css` (plus `rgb2css`, `hsl2css`, `hwb2css`).
+Each takes an optional `alpha`: `oklch2css(oklch, 0.5)` gives `"oklch(0.7349 0.1726 45.09 / 0.5)"`, and
+`rgb2css(rgb, 0.5)` / `hsl2css(hsl, 0.5)` give `rgba()` / `hsla()`. (`rgba2css` is deprecated in favour of `rgb2css(rgb, alpha)`.)
 CSS `lch()` uses D50, so pass `lchD502css` an LCH computed from D50 Lab:
 `lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and prints a different colour.
 
