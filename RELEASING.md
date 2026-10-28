@@ -29,15 +29,15 @@ After CI passes, each run does the next step for that branch:
 
 ## Branches and dist-tags
 
-| Branch | Releases         | npm dist-tag                           |
-| ------ | ---------------- | -------------------------------------- |
-| `main` | the newest major | `latest`                               |
-| `1.x`  | 1.x fixes        | `latest` until 2.0.0 exists, then `v1` |
+| Branch | Releases         | npm dist-tag                                 |
+| ------ | ---------------- | -------------------------------------------- |
+| `main` | the newest major | `latest`                                     |
+| `1.x`  | 1.x fixes        | `latest` until 2.0.0 exists, then `latest-1` |
 
 Prereleases such as `2.1.0-beta.1` get `next`. npm fixes the dist-tag when a version is
 staged, and staged versions count when choosing it. So when you release `main` and
 `1.x` together, run the workflow for `main` first: then `2.0.0` is staged as `latest` and
-`1.2.0` as `v1`. If two staged versions both say `latest`, approve the older one first.
+`1.2.0` as `latest-1`. If two staged versions both say `latest`, approve the older one first.
 
 A maintenance branch refuses to release a different major (for example 2.0.0 from
 `1.x`). Fixes that apply to both majors are committed on one branch and cherry-picked
