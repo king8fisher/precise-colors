@@ -171,6 +171,20 @@ test("roundTo", () => {
   expect(roundTo(1.3549999999999998, 3)).toBe(1.355);
 });
 
+test("roundTo - negative halves mirror positive ones (away from zero)", () => {
+  expect(roundTo(2.5, 0)).toBe(3);
+  expect(roundTo(-2.5, 0)).toBe(-3);
+  expect(roundTo(1.005, 2)).toBe(1.01);
+  expect(roundTo(-1.005, 2)).toBe(-1.01);
+  expect(roundTo(-1.004, 2)).toBe(-1);
+  expect(roundTo(-5e-7, 6)).toBe(-0.000001);
+  expect(Object.is(roundTo(-0.004, 2), -0) || roundTo(-0.004, 2) === 0).toBe(true);
+  for (let i = 0; i < 1000; i++) {
+    const n = (i - 500) / 7.3;
+    expect(roundTo(-n, 3) + 0).toBe(-roundTo(n, 3) + 0); // + 0 so -0 and 0 compare equal
+  }
+});
+
 test("roundTo - numbers that print in exponent form", () => {
   expect(roundTo(5e-7, 6)).toBe(0.000001);
   expect(roundTo(1.5e-7, 7)).toBe(2e-7);

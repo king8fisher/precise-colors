@@ -17,6 +17,10 @@ only in the git history.
   colour (including non-strings), instead of black, so invalid input can no
   longer be mistaken for `#000000`. Its return type is now `Rgb | null`; use
   `hex2rgb(x) ?? fallback`, or `hex2rgb(x)!` when the input is known to be valid.
+- `roundTo` rounds halves away from zero, so negative values mirror positive
+  ones: `roundTo(-1.005, 2)` is now `-1.01` (was `-1`) and `roundTo(-2.5, 0)` is
+  `-3` (was `-2`). This affects negative values printed by the `*2css`
+  functions, such as Lab `a`/`b` in `labD502css`.
 
 ### Added
 

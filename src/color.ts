@@ -248,9 +248,10 @@ export interface Oklch {
 }
 
 /**
- * Rounds a number to specified decimal places.
+ * Rounds a number to specified decimal places, with halves rounded away from zero.
  * Uses exponential notation to avoid floating-point errors
- * (e.g., `1.005 * 100 = 100.49999...` but `roundTo(1.005, 2) = 1.01`).
+ * (e.g., `1.005 * 100 = 100.49999...` but `roundTo(1.005, 2) = 1.01`, and
+ * `roundTo(-1.005, 2) = -1.01`).
  * @param num - Number to round
  * @param places - Decimal places `[0..]`
  * @returns Rounded number
@@ -263,7 +264,9 @@ export function roundTo(num: number, places: number) {
   // Shift the decimal point by editing the exponent of the string form. Splitting
   // on "e" keeps numbers that already print as exponents (5e-7, 1e21) correct.
   const [mantissa, exponent] = num.toString().split("e");
-  const rounded = Math.round(+(mantissa + "e" + (+(exponent || 0) + places)));
+  const shifted = +(mantissa + "e" + (+(exponent || 0) + places));
+  // Halves round away from zero, so negative values mirror positive ones
+  const rounded = Math.sign(shifted) * Math.round(Math.abs(shifted));
   const [rMantissa, rExponent] = rounded.toString().split("e");
   return +(rMantissa + "e" + (+(rExponent || 0) - places));
 }
