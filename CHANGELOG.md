@@ -2,10 +2,14 @@
 
 All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses
-[Semantic Versioning](https://semver.org/). Versions before 1.1.1 are described
+[Semantic Versioning](https://semver.org/). Versions before 1.2.0 are described
 only in the git history.
 
 ## [Unreleased]
+
+### Added
+
+- The package now includes this CHANGELOG.
 
 ### Fixed
 
