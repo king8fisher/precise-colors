@@ -5,6 +5,15 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Versions before 1.2.0 are described
 only in the git history.
 
+## [Unreleased]
+
+### Changed
+
+- **Breaking:** the package now has an `exports` map. `import` resolves to the
+  ESM build and `require` to the CommonJS build, each with matching type
+  declarations. Deep imports such as `precise-colors/dist/index.js` no longer
+  resolve; import from `precise-colors` instead.
+
 ## [1.2.0] - 2026-10-28
 
 ### Added
