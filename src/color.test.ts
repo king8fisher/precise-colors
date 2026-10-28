@@ -21,6 +21,7 @@ import {
   hsl2rgb,
   hsv2rgb,
   hwb2css,
+  hwb2hcg,
   hwb2rgb,
   lab2lch,
   lab2lyz,
@@ -210,6 +211,25 @@ test("gray2hex", () => {
   expect(gray2hex(100)).toBe("ffffff");
   expect(gray2hex(-10)).toBe("000000");
   expect(gray2hex(120)).toBe("ffffff");
+});
+
+test("hwb2hcg - w + b > 100 normalizes to gray like hwb2rgb", () => {
+  for (const hwb of [{ h: 0, w: 100, b: 100 }, { h: 120, w: 60, b: 60 }, { h: 200, w: 70, b: 50 }, { h: 300, w: 100, b: 0.5 }]) {
+    const hcg = hwb2hcg(hwb);
+    assertAlmostEquals(hcg.c, 0, 1e-9, `${JSON.stringify(hwb)} chroma`);
+    assertAlmostEquals(hcg.g, hwb.w / (hwb.w + hwb.b) * 100, 1e-9, `${JSON.stringify(hwb)} gray`);
+    assertAlmostEqualsColor(hcg2rgb(hcg), hwb2rgb(hwb), 1e-9, JSON.stringify(hwb));
+  }
+});
+
+test("hwb2hcg -> hcg2rgb matches hwb2rgb", () => {
+  for (let h = 0; h < 360; h += 15) {
+    for (let w = 0; w <= 100; w += 10) {
+      for (let b = 0; b <= 100; b += 10) {
+        assertAlmostEqualsColor(hcg2rgb(hwb2hcg({ h, w, b })), hwb2rgb({ h, w, b }), 1e-9, `hwb(${h}, ${w}, ${b})`);
+      }
+    }
+  }
 });
 
 test("hwb2css - space-separated syntax (hwb() has no comma form)", () => {

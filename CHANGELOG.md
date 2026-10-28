@@ -24,3 +24,6 @@ only in the git history.
   now returns black instead of a partly parsed colour.
 - `hwb2css` returned comma-separated `hwb(0deg,0%,0%)`, which browsers reject:
   CSS `hwb()` has no comma syntax. It now returns `hwb(0deg 0% 0%)`.
+- `hwb2hcg` returned negative chroma when whiteness + blackness exceeded 100,
+  so `hwb2hcg({ h: 0, w: 100, b: 100 })` described cyan instead of 50% gray.
+  It now normalizes w and b the same way `hwb2rgb` (and CSS) do.

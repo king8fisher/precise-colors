@@ -809,8 +809,13 @@ export function hwb2rgb(hwb: Hwb): Rgb {
  * @returns color - {@link Hcg}, h `[0..360]`, c/g `[0..100]`
  */
 export function hwb2hcg(hwb: Hwb): Hcg {
-  const w = hwb.w / 100;
-  const b = hwb.b / 100;
+  let w = hwb.w / 100;
+  let b = hwb.b / 100;
+  const ratio = w + b;
+  if (ratio > 1) { // w + b cannot be > 1, same normalization as hwb2rgb
+    w /= ratio;
+    b /= ratio;
+  }
   const v = 1 - b;
   const c = v - w;
   let g = 0;
