@@ -5,6 +5,13 @@ All notable changes to this project are documented here. The format follows
 [Semantic Versioning](https://semver.org/). Versions before 1.2.0 are described
 only in the git history.
 
+## [Unreleased]
+
+### Documentation
+
+- The README lists the maintained versions: 2.x is current, and 1.x receives bug
+  fixes only.
+
 ## [2.0.0] - 2026-10-28
 
 ### Changed
