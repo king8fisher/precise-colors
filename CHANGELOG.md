@@ -63,6 +63,10 @@ only in the git history.
 
 ### Documentation
 
+- JSDoc links to the CSS Color 4 spec now point at sections that exist
+  (`#lch-colors` and `#ok-lch` did not), the `*2css` functions link to the
+  section defining their CSS function, and `rgb2css`, `rgba2css` and
+  `hsl2css` gained links.
 - Corrected README examples whose outputs were wrong: `rgb2oklab` /
   `rgb2oklch` of `{ r: 255, g: 128, b: 64 }`, the ΔE values for red vs orange,
   and `lab2rgb(lch2lab({ l: 50, c: 40, h: 270 }))`.

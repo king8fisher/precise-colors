@@ -202,7 +202,7 @@ export interface Lyz {
  * @property {number} c - Chroma `[0..~230]`
  * @property {number} h - Hue `[0..360]`
  * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_model|Wikipedia}
- * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#cie-lab|W3C CSS Color 4}
  */
 export interface Lch {
   /** Lightness `[0..100]` */
@@ -236,7 +236,7 @@ export interface Oklab {
  * @property {number} c - Chroma `[0..0.4+]`
  * @property {number} h - Hue angle `[0..360]`
  * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
- * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#ok-lab|W3C CSS Color 4}
  */
 export interface Oklch {
   /** Perceived lightness `[0..1]` */
@@ -297,6 +297,7 @@ function cssAlpha(alpha: number | undefined): string {
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
  * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
  * @returns CSS string `"rgb(r,g,b)"`, or `"rgba(r,g,b,a)"` with `alpha` (rounded)
+ * @see {@link https://www.w3.org/TR/css-color-4/#rgb-functions|W3C CSS Color 4}
  */
 export function rgb2css(rgb: Rgb, alpha?: number): string {
   if (alpha !== undefined) {
@@ -322,6 +323,7 @@ export function rgb2str(rgb: Rgb, sep: string = ","): string {
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
  * @param alpha - Alpha `[0..1]`
  * @returns CSS string `"rgba(r,g,b,a)"` (rounded)
+ * @see {@link https://www.w3.org/TR/css-color-4/#rgb-functions|W3C CSS Color 4}
  */
 export function rgba2css(rgb: Rgb, alpha: number): string {
   return rgb2css(rgb, alpha);
@@ -333,6 +335,7 @@ export function rgba2css(rgb: Rgb, alpha: number): string {
  * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
  * @returns CSS string `"hsl(hdeg,s%,l%)"`, or `"hsla(hdeg,s%,l%,a)"` with `alpha`
  * (rounded to 2 decimals)
+ * @see {@link https://www.w3.org/TR/css-color-4/#the-hsl-notation|W3C CSS Color 4}
  */
 export function hsl2css(hsl: Hsl, alpha?: number) {
   const hsl3 = `${roundTo(hsl.h, 2)}deg,${roundTo(hsl.s, 2)}%,${roundTo(hsl.l, 2)}%`;
@@ -357,7 +360,7 @@ export function hwb2css(hwb: Hwb, alpha?: number) {
  * @param oklab - {@link Oklab} color, l `[0..1]`, a/b `[-0.4..0.4]`
  * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"oklab(l a b)"` (rounded to 4 decimals)
- * @see {@link https://www.w3.org/TR/css-color-4/#ok-lab|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch|W3C CSS Color 4}
  */
 export function oklab2css(oklab: Oklab, alpha?: number): string {
   return `oklab(${roundTo(oklab.l, 4)} ${roundTo(oklab.a, 4)} ${roundTo(oklab.b, 4)}${cssAlpha(alpha)})`;
@@ -368,7 +371,7 @@ export function oklab2css(oklab: Oklab, alpha?: number): string {
  * @param oklch - {@link Oklch} color, l `[0..1]`, c `[0..0.4+]`, h `[0..360]`
  * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"oklch(l c h)"` (rounded to 4 decimals for l/c, 2 for h)
- * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#specifying-oklab-oklch|W3C CSS Color 4}
  */
 export function oklch2css(oklch: Oklch, alpha?: number): string {
   const c = roundTo(oklch.c, 4);
@@ -382,7 +385,7 @@ export function oklch2css(oklch: Oklch, alpha?: number): string {
  * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
  * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"lab(l% a b)"` (rounded to 2 decimals)
- * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#specifying-lab-lch|W3C CSS Color 4}
  */
 export function labD502css(lab: LabD50, alpha?: number): string {
   return `lab(${roundTo(lab.l, 2)}% ${roundTo(lab.a, 2)} ${roundTo(lab.b, 2)}${cssAlpha(alpha)})`;
@@ -396,7 +399,7 @@ export function labD502css(lab: LabD50, alpha?: number): string {
  * @param lch - {@link Lch} color (from D50 Lab), l `[0..100]`, c `[0..~230]`, h `[0..360]`
  * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"lch(l% c h)"` (rounded to 2 decimals)
- * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#specifying-lab-lch|W3C CSS Color 4}
  */
 export function lchD502css(lch: Lch, alpha?: number): string {
   const c = roundTo(lch.c, 2);
