@@ -38,7 +38,7 @@ const rgb = xyz2rgb({ x: xyz.l, y: xyz.y, z: xyz.z })
 // Final step: round to integers or use output functions
 Math.round(rgb.r)        // 128
 roundTo(rgb.r, 2)        // 128.00 (avoids floating-point errors)
-rgb2css(rgb)             // "rgb(128,64,192)"
+rgb2css(rgb)             // "rgb(128 64 192)"
 ```
 
 ## Supported Color Spaces

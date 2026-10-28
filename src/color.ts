@@ -296,17 +296,14 @@ function cssAlpha(alpha: number | undefined): string {
 }
 
 /**
- * Converts {@link Rgb} to CSS rgb() string, or rgba() when `alpha` is given.
+ * Converts {@link Rgb} to CSS rgb() string.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
- * @returns CSS string `"rgb(r,g,b)"`, or `"rgba(r,g,b,a)"` with `alpha` (rounded)
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
+ * @returns CSS string `"rgb(r g b)"`, or `"rgb(r g b / a)"` with `alpha` (rounded)
  * @see {@link https://www.w3.org/TR/css-color-4/#rgb-functions|W3C CSS Color 4}
  */
 export function rgb2css(rgb: Rgb, alpha?: number): string {
-  if (alpha !== undefined) {
-    return `rgba(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)},${roundTo(alpha, 2)})`;
-  }
-  return `rgb(${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)})`;
+  return `rgb(${Math.round(rgb.r)} ${Math.round(rgb.g)} ${Math.round(rgb.b)}${cssAlpha(alpha)})`;
 }
 
 /**
@@ -320,12 +317,12 @@ export function rgb2str(rgb: Rgb, sep: string = ","): string {
 }
 
 /**
- * Converts {@link Rgb} and alpha to CSS rgba() string.
+ * Converts {@link Rgb} and alpha to a CSS rgb() string with alpha.
  * @deprecated Use {@link rgb2css} with its `alpha` argument, which returns the same
  * string: `rgb2css(rgb, alpha)`. `rgba2css` will be removed in 2.0.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
  * @param alpha - Alpha `[0..1]`
- * @returns CSS string `"rgba(r,g,b,a)"` (rounded)
+ * @returns CSS string `"rgb(r g b / a)"` (rounded)
  * @see {@link https://www.w3.org/TR/css-color-4/#rgb-functions|W3C CSS Color 4}
  */
 export function rgba2css(rgb: Rgb, alpha: number): string {
@@ -333,16 +330,15 @@ export function rgba2css(rgb: Rgb, alpha: number): string {
 }
 
 /**
- * Converts {@link Hsl} to CSS hsl() string, or hsla() when `alpha` is given.
+ * Converts {@link Hsl} to CSS hsl() string.
  * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
- * @param alpha - Optional alpha `[0..1]` (rounded to 2 decimals)
- * @returns CSS string `"hsl(hdeg,s%,l%)"`, or `"hsla(hdeg,s%,l%,a)"` with `alpha`
+ * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
+ * @returns CSS string `"hsl(hdeg s% l%)"`, or `"hsl(hdeg s% l% / a)"` with `alpha`
  * (rounded to 2 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#the-hsl-notation|W3C CSS Color 4}
  */
 export function hsl2css(hsl: Hsl, alpha?: number) {
-  const hsl3 = `${roundTo(hsl.h, 2)}deg,${roundTo(hsl.s, 2)}%,${roundTo(hsl.l, 2)}%`;
-  return alpha === undefined ? `hsl(${hsl3})` : `hsla(${hsl3},${roundTo(alpha, 2)})`;
+  return `hsl(${roundTo(hsl.h, 2)}deg ${roundTo(hsl.s, 2)}% ${roundTo(hsl.l, 2)}%${cssAlpha(alpha)})`;
 }
 
 /**

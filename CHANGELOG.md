@@ -21,6 +21,12 @@ only in the git history.
   ones: `roundTo(-1.005, 2)` is now `-1.01` (was `-1`) and `roundTo(-2.5, 0)` is
   `-3` (was `-2`). This affects negative values printed by the `*2css`
   functions, such as Lab `a`/`b` in `labD502css`.
+- `rgb2css`, `rgba2css` and `hsl2css` use the CSS Color 4 space-separated
+  syntax, like the other `*2css` functions: `rgb(128 64 192)`,
+  `rgb(128 64 192 / 0.5)` and `hsl(26.09deg 51.57% 43.73%)` instead of
+  `rgb(128,64,192)`, `rgba(128,64,192,0.5)` and `hsl(26.09deg,51.57%,43.73%)`.
+  Both forms are valid CSS. Update any code that parses or compares these
+  strings. `rgb2str` still returns `"r,g,b"`.
 
 ### Added
 
