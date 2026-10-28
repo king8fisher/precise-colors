@@ -44,13 +44,13 @@ test("plan - first releases of both branches", () => {
   const npm = registry(["1.0.0", "1.1.0"], "1.1.0");
   // main first: 2.0.0 is staged as latest, so 1.2.0 must not also be staged as latest
   expect(plan({ version: "2.0.0", branch: "main", packument: npm, staged: [], changelog })).toMatchObject({ stage: true, npmTag: "latest" });
-  expect(plan({ version: "1.2.0", branch: "1.x", packument: npm, staged: ["2.0.0"], changelog })).toMatchObject({ stage: true, npmTag: "v1" });
+  expect(plan({ version: "1.2.0", branch: "1.x", packument: npm, staged: ["2.0.0"], changelog })).toMatchObject({ stage: true, npmTag: "latest-1" });
   // 1.x first: 1.2.0 is latest until 2.0.0 is staged after it
   expect(plan({ version: "1.2.0", branch: "1.x", packument: npm, staged: [], changelog })).toMatchObject({ stage: true, npmTag: "latest" });
   expect(plan({ version: "2.0.0", branch: "main", packument: npm, staged: ["1.2.0"], changelog })).toMatchObject({ stage: true, npmTag: "latest" });
   // published 2.0.0 also keeps a later 1.x release off latest
   const after = registry(["1.1.0", "2.0.0"], "2.0.0");
-  expect(plan({ version: "1.2.0", branch: "1.x", packument: after, staged: [], changelog })).toMatchObject({ stage: true, npmTag: "v1" });
+  expect(plan({ version: "1.2.0", branch: "1.x", packument: after, staged: [], changelog })).toMatchObject({ stage: true, npmTag: "latest-1" });
 });
 
 test("plan - staged versions wait for approval, published ones are done", () => {
@@ -67,6 +67,17 @@ test("plan - prereleases go to next and do not count as the newest stable versio
     .toMatchObject({ stage: true, npmTag: "next", prerelease: true });
   expect(plan({ version: "2.0.0", branch: "main", packument: registry(["1.1.0"], "1.1.0"), staged: ["2.1.0-beta.1"], changelog }))
     .toMatchObject({ npmTag: "latest" });
+});
+
+test("plan - dist-tags are never semver ranges, which npm rejects (e.g. v1)", () => {
+  const cases: [string, string[], string][] = [
+    ["2.0.0", ["1.1.0"], "1.1.0"], ["1.2.0", ["2.0.0"], "2.0.0"], ["3.4.5", ["10.0.0"], "10.0.0"],
+  ];
+  for (const [version, published, latest] of cases) {
+    const cl = `## [${version}] - 2026-10-28\n\n- x\n`;
+    const { npmTag } = plan({ version, branch: "main", packument: registry(published, latest), staged: [], changelog: cl });
+    expect(npmTag).toMatch(/^(latest|next)(-\d+)?$/);
+  }
 });
 
 test("plan - guards", () => {

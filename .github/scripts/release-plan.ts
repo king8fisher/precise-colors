@@ -9,7 +9,8 @@
  * The version in package.json is staged when npm has neither published nor staged it.
  * Its dist-tag is chosen at staging time (npm makes it immutable) from the versions that
  * are published or staged: the newest stable version is `latest`, an older major (a fix
- * on a maintenance branch such as `1.x`) is `v<major>`, and a prerelease is `next`.
+ * on a maintenance branch such as `1.x`) is `latest-<major>`, and a prerelease is `next`.
+ * (npm rejects tag names that are valid semver ranges, so `v1` cannot be used.)
  *
  * Run as a script (`bun .github/scripts/release-plan.ts`), it reads the versions with draft
  * GitHub releases from $STAGED_VERSIONS (comma-separated), writes the step outputs
@@ -107,7 +108,7 @@ export function plan(input: {
   let npmTag: string;
   if (prerelease) npmTag = "next";
   else if (newest === undefined || compareVersions(version, newest) >= 0) npmTag = "latest";
-  else npmTag = `v${major}`;
+  else npmTag = `latest-${major}`;
 
   const notes = changelogSection(changelog, version);
   if (stage && !notes) {
