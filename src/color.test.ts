@@ -341,16 +341,15 @@ test("hex2rgb - accepted formats", () => {
   expect(hex2rgb("000000")).toEqual({ r: 0, g: 0, b: 0 });
 });
 
-test("hex2rgb - invalid input returns black", () => {
-  const black = { r: 0, g: 0, b: 0 };
+test("hex2rgb - invalid input returns null", () => {
   for (const input of [
     "", " ", "#", "##3399cc", "12zz56", "3399c", "3399ccf", "3399ccfff",
     "#3399cc00ff", "0x3399cc", "-3399cc", "+39c", "#3399cc ff", "3399 cc", "1",
   ]) {
-    expect(hex2rgb(input)).toEqual(black);
+    expect(hex2rgb(input)).toBeNull();
   }
   for (const input of [undefined, null, 0x3399cc, {}, ["3399cc"]]) {
-    expect(hex2rgb(input as unknown as string)).toEqual(black);
+    expect(hex2rgb(input as unknown as string)).toBeNull();
   }
 });
 

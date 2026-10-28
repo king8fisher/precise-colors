@@ -442,18 +442,18 @@ export function gray2hex(gray: number): string {
  * Accepts an optional leading `#`, 3/6-digit forms, and 4/8-digit forms whose
  * alpha byte is ignored. Surrounding whitespace is trimmed.
  * @param input - Hex string, e.g. `"3399cc"`, `"#3399cc"`, `"#39c"`, `"3399ccff"`
- * @returns color - {@link Rgb}, r/g/b `[0..255]`; black if `input` is not a valid hex color
+ * @returns color - {@link Rgb}, r/g/b `[0..255]`, or `null` if `input` is not a valid hex color
  */
-export function hex2rgb(input: string): Rgb {
+export function hex2rgb(input: string): Rgb | null {
   if (typeof input !== "string") {
-    return { r: 0, g: 0, b: 0 };
+    return null;
   }
   let hex = input.trim().replace(/^#/, "");
   if (/^[0-9a-f]{3,4}$/i.test(hex)) {
     hex = hex.split("").map((c) => c + c).join("");
   }
   if (!/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(hex)) {
-    return { r: 0, g: 0, b: 0 };
+    return null;
   }
   const value = parseInt(hex.slice(0, 6), 16);
   return {

@@ -13,6 +13,10 @@ only in the git history.
   ESM build and `require` to the CommonJS build, each with matching type
   declarations. Deep imports such as `precise-colors/dist/index.js` no longer
   resolve; import from `precise-colors` instead.
+- **Breaking:** `hex2rgb` returns `null` for input that is not a valid hex
+  colour (including non-strings), instead of black, so invalid input can no
+  longer be mistaken for `#000000`. Its return type is now `Rgb | null`; use
+  `hex2rgb(x) ?? fallback`, or `hex2rgb(x)!` when the input is known to be valid.
 
 ## [1.2.0] - 2026-10-28
 
