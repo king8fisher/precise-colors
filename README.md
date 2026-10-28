@@ -10,7 +10,7 @@ High-precision color space conversions without intermediate rounding (except `*2
   * Round only at the end using `Math.round` or provided `roundTo`, `*2css`, `*2hex` functions.
 * Make it clear in JSDoc the _input/output ranges_ the user operates on and `{@link Type}` references
 for IDE navigation, preserved in `.d.ts` files.
-* Named Lab illuminants: `LabD65` (traditional) and `LabD50` ([CSS Color 4](https://www.w3.org/TR/css-color-4/#lab-colors)) document which white point a value uses (see [Type Safety](#type-safety) for what the compiler checks).
+* Type-safe illuminants: `LabD65`/`LchD65` (traditional) and `LabD50`/`LchD50` ([CSS Color 4](https://www.w3.org/TR/css-color-4/#lab-colors)) prevent accidentally mixing values at compile time.
 
 ## Install
 
@@ -41,6 +41,21 @@ roundTo(rgb.r, 2)        // 128.00 (avoids floating-point errors)
 rgb2css(rgb)             // "rgb(128 64 192)"
 ```
 
+## Hex Strings
+
+`hex2rgb` accepts an optional `#`, 3/6-digit forms, and 4/8-digit forms (the alpha byte is ignored). It returns `null` for anything else, so invalid input is never mistaken for black:
+
+```ts
+import { hex2rgb, rgb2hex, lab2rgb } from 'precise-colors'
+
+hex2rgb('#39c')       // { r: 51, g: 153, b: 204 }
+hex2rgb('3399ccff')   // { r: 51, g: 153, b: 204 }
+hex2rgb('12zz56')     // null
+
+// rgb2hex / gray2hex clamp channels to [0..255], so out-of-gamut values stay valid
+rgb2hex(lab2rgb({ l: 60, a: 120, b: 100 }))  // "ff0000"
+```
+
 ## Supported Color Spaces
 
 | Space  | Range                        | Description                      |
@@ -53,7 +68,7 @@ rgb2css(rgb)             // "rgb(128 64 192)"
 | CMYK   | c,m,y,k: 0-100               | Cyan, Magenta, Yellow, Key       |
 | LabD65 | L: 0-100, a,b: ±128          | CIE L\*a\*b\* (D65)              |
 | LabD50 | L: 0-100, a,b: ±128          | CIE L\*a\*b\* (D50, CSS Color 4) |
-| LCH    | L: 0-100, C: 0-230, H: 0-360 | CIE LCH (cylindrical Lab)        |
+| LCH    | L: 0-100, C: 0-230, H: 0-360 | CIE LCH (`LchD65`, `LchD50`)     |
 | Oklab  | L: 0-1, a,b: ±0.4            | Oklab (perceptually uniform)     |
 | Oklch  | L: 0-1, C: 0-0.4, H: 0-360   | Oklch (cylindrical Oklab)        |
 | XYZ    | x: 0-95, y: 0-100, z: 0-109  | CIE XYZ (D65)                    |
@@ -68,15 +83,15 @@ rgb2css(rgb)             // "rgb(128 64 192)"
 
 |        | RGB | HSL | HSV | HWB | HCG | CMYK | LabD65 | LabD50 | LCH | Oklab | Oklch | XYZ | Apple | Gray |
 | ------ | --- | --- | --- | --- | --- | ---- | ------ | ------ | --- | ----- | ----- | --- | ----- | ---- |
-| RGB    | ⟍   | ⤶⤴  | ⤶   | ⤶⤴  | ⤶   | ⤶⤴   | ⤶⤴     | ⤶⤴     | °   | ⤶⤴    | ⤶⤴    | ⤶⤴  | ⤶⤴    | ⤶    |
+| RGB    | ⟍   | ⤶⤴  | ⤶⤴  | ⤶⤴  | ⤶   | ⤶⤴   | ⤶⤴     | ⤶⤴     | °   | ⤶⤴    | ⤶⤴    | ⤶⤴  | ⤶⤴    | ⤶    |
 | HSL    | ⤴⤶  | ⟍   | ⤶⤴  |     | ⤶⤴  |      |        |        |     |       |       |     |       | ⤶    |
-| HSV    | ⤴   | ⤴⤶  | ⟍   |     | ⤶⤴  |      |        |        |     |       |       |     |       | ⤶    |
+| HSV    | ⤴⤶  | ⤴⤶  | ⟍   |     | ⤶⤴  |      |        |        |     |       |       |     |       | ⤶    |
 | HWB    | ⤴⤶  |     |     | ⟍   | ⤶⤴  |      |        |        |     |       |       |     |       | ⤶    |
 | HCG    | ⤴   | ⤴⤶  | ⤴⤶  | ⤴⤶  | ⟍   |      |        |        |     |       |       |     |       |      |
 | CMYK   | ⤴⤶  |     |     |     |     | ⟍    |        |        |     |       |       |     |       | ⤶    |
 | LabD65 | ⤴⤶  |     |     |     |     |      | ⟍      | °      | ⤶⤴  |       |       | ⤶⤴  |       | ⤶    |
-| LabD50 | ⤴⤶  |     |     |     |     |      | °      | ⟍      |     |       |       |     |       |      |
-| LCH    | °   |     |     |     |     |      | ⤴⤶     |        | ⟍   |       |       |     |       |      |
+| LabD50 | ⤴⤶  |     |     |     |     |      | °      | ⟍      | ⤶⤴  |       |       |     |       |      |
+| LCH    | °   |     |     |     |     |      | ⤴⤶     | ⤴⤶     | ⟍   |       |       |     |       |      |
 | Oklab  | ⤴⤶  |     |     |     |     |      |        |        |     | ⟍     | ⤶⤴    |     |       |      |
 | Oklch  | ⤴⤶  |     |     |     |     |      |        |        |     | ⤴⤶    | ⟍     |     |       |      |
 | XYZ    | ⤴⤶  |     |     |     |     |      | ⤴⤶     |        |     |       |       | ⟍   |       |      |
@@ -102,21 +117,21 @@ Round-trip precision verified across all 16,777,216 RGB colors:
 ## Standards Compliance
 
 - **CIE Lab**: Exact rational constants per CIE 15.3 (`ε = 216/24389`, `κ = 24389/27`)
-- **D65 white point**: X=95.047, Y=100, Z=108.883
-- **D50 white point**: X=96.422, Y=100, Z=82.521 (ASTM E308; CSS Color 4 derives a slightly different D50 from the chromaticity x=0.3457, y=0.3585)
-- **sRGB↔XYZ**: [Bruce Lindbloom](http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html) 7-digit matrices, derived from the IEC 61966-2-1 sRGB primaries and the white points above (D65 native, D50 Bradford-adapted). The inverse matrices are exact inverses of the forward ones.
-- **Oklab**: [Björn Ottosson matrices](https://bottosson.github.io/posts/oklab/)
+- **D65 (traditional Lab, XYZ)**: white X=95.047, Y=100, Z=108.883 (ASTM E308), with [Bruce Lindbloom](http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html)'s 7-digit sRGB↔XYZ matrix, derived from the IEC 61966-2-1 sRGB primaries
+- **D50 (CSS `lab()` / `lch()`)**: the [CSS Color 4 sample code](https://www.w3.org/TR/css-color-4/#color-conversion-code) constants: white from the chromaticity x=0.3457, y=0.3585 (X=96.4296, Z=82.5105) and the spec's sRGB→XYZ and Bradford D65→D50 matrices
+- **Oklab**: [Björn Ottosson](https://bottosson.github.io/posts/oklab/)'s matrices as revised in the CSS Color 4 sample code
+- Every inverse matrix is the exact inverse (in double precision) of its forward matrix, so round trips lose nothing but floating-point noise
 
 ## CSS Color 4 Compatibility
 
-Use `rgb2labD50` / `labD502rgb` for Lab values compatible with the CSS `lab()` function. Because of the white point difference noted above, results agree with the CSS Color 4 reference conversion to within 0.02 Lab units, or within 0.6 per channel when converting back to RGB:
+Use `rgb2labD50` / `labD502rgb` for Lab values matching the CSS `lab()` function. They use the CSS Color 4 constants and agree with the spec's reference conversion to within 1e-12:
 
 ```ts
 import { rgb2labD50, labD502rgb, LabD50 } from 'precise-colors'
 
 // CSS Color 4 uses D50 white point
 const lab: LabD50 = rgb2labD50({ r: 255, g: 0, b: 0 })
-// → { l: 54.29, a: 80.81, b: 69.89 }
+// → { l: 54.29, a: 80.80, b: 69.89 }
 
 // Convert back
 const rgb = labD502rgb({ l: 50, a: 0, b: 0 })
@@ -143,11 +158,10 @@ oklab2css(oklab)  // "oklab(0.7349 0.1219 0.1223)"
 oklch2css(oklch)  // "oklch(0.7349 0.1726 45.09)"
 ```
 
-CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css` (plus `rgb2css`, `hsl2css`, `hwb2css`).
-Each takes an optional `alpha`: `oklch2css(oklch, 0.5)` gives `"oklch(0.7349 0.1726 45.09 / 0.5)"`, and
-`rgb2css(rgb, 0.5)` / `hsl2css(hsl, 0.5)` give `rgba()` / `hsla()`. (`rgba2css` is deprecated in favour of `rgb2css(rgb, alpha)`.)
-CSS `lch()` uses D50, so pass `lchD502css` an LCH computed from D50 Lab:
-`lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and prints a different colour.
+CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css` (plus `rgb2css`, `hsl2css`, `hwb2css`), all in the space-separated CSS Color 4 syntax.
+Each takes an optional `alpha`, printed as ` / a`: `oklch2css(oklch, 0.5)` gives `"oklch(0.7349 0.1726 45.09 / 0.5)"`, and `rgb2css({ r: 255, g: 128, b: 64 }, 0.5)` gives `"rgb(255 128 64 / 0.5)"`.
+CSS `lch()` uses D50, so `lchD502css` takes an `LchD50`:
+`lchD502css(labD502lch(rgb2labD50(rgb)))`. Passing D65 LCH from `lab2lch` is a type error.
 
 ## LCH vs Oklch
 
@@ -195,22 +209,25 @@ deltaEOk(redOk, orangeOk)  // ~0.155
 
 ## Type Safety
 
-`LabD65` and `LabD50` name the illuminant a value uses. In 1.x the compiler does not stop you mixing them: both brands are optional properties under different keys, so each type is assignable to the other. Pass D65 values to D65 functions and D50 values to D50 functions (2.0 enforces this):
+`LabD65`/`LabD50` and `LchD65`/`LchD50` are branded types that prevent mixing illuminants:
 
 ```ts
-import { rgb2labD65, labD652rgb, rgb2labD50, labD502rgb, LabD65, LabD50 } from 'precise-colors'
+import { rgb2labD65, labD652rgb, rgb2labD50, labD502rgb, labD502lch, lab2lch, lchD502css, deltaE2000, LabD65, LabD50 } from 'precise-colors'
 
 const labD65: LabD65 = rgb2labD65({ r: 255, g: 0, b: 0 })
 const labD50: LabD50 = rgb2labD50({ r: 255, g: 0, b: 0 })
 
-labD652rgb(labD65) // ✓ Correct: D65 → D65 function
-labD502rgb(labD50) // ✓ Correct: D50 → D50 function
+labD652rgb(labD65)               // ✓ Correct: D65 → D65 function
+labD502rgb(labD50)               // ✓ Correct: D50 → D50 function
+lchD502css(labD502lch(labD50))   // ✓ Correct: CSS lch() is D50
 
-// labD652rgb(labD50) // ✗ Wrong: compiles in 1.x, but treats D50 values as D65
-// labD502rgb(labD65) // ✗ Wrong: compiles in 1.x, but treats D65 values as D50
+// labD652rgb(labD50)            // ✗ TypeScript error: LabD50 not assignable to LabD65
+// labD502rgb(labD65)            // ✗ TypeScript error: LabD65 not assignable to LabD50
+// lchD502css(lab2lch(labD65))   // ✗ TypeScript error: LchD65 not assignable to LchD50
+// deltaE2000(labD65, labD50)    // ✗ TypeScript error: both arguments must use one illuminant
 ```
 
-`Lab` is an alias for `LabD65`. Similarly, `rgb2lab`/`lab2rgb` are aliases for `rgb2labD65`/`labD652rgb`.
+Plain `{ l, a, b }` objects are accepted by either illuminant. `Lab` and `Lch` are aliases for `LabD65` and `LchD65`. Similarly, `rgb2lab`/`lab2rgb` are aliases for `rgb2labD65`/`labD652rgb`.
 
 ## Chaining Conversions
 
@@ -251,7 +268,7 @@ function labD50toD65(lab: LabD50): LabD65 {
 const labD65 = rgb2labD65({ r: 255, g: 128, b: 64 })
 const labD50 = labD65toD50(labD65)
 // labD65: { l: 67.33, a: 44.14, b: 55.35 }
-// labD50: { l: 68.05, a: 46.41, b: 56.40 }
+// labD50: { l: 68.05, a: 46.41, b: 56.41 }
 ```
 
 This approach guarantees round-trip consistency with sRGB and avoids additional error from separate chromatic adaptation.
