@@ -8,6 +8,7 @@ import {
   apple2rgb,
   cmyk2rgb,
   gray2cmyk,
+  gray2hex,
   gray2hsl,
   gray2hsv,
   gray2hwb,
@@ -191,6 +192,22 @@ test("rgb to hex", () => {
   const rgb = { r: 169, g: 104, b: 54 };
   expect(rgb2hex(rgb)).toBe("a96836");
   expect(rgb2hex({ r: 0, g: 0, b: 0 })).toBe("000000");
+});
+
+test("rgb2hex - clamps out-of-range channels", () => {
+  expect(rgb2hex({ r: -3, g: 0, b: 0 })).toBe("000000");
+  expect(rgb2hex({ r: 256, g: 0, b: 0 })).toBe("ff0000");
+  expect(rgb2hex({ r: 255.4, g: -0.4, b: 1000 })).toBe("ff00ff");
+  // lab2rgb returns out-of-gamut values; piping them through must still give 6 hex digits
+  expect(rgb2hex(lab2rgb({ l: 60, a: 120, b: 100 }))).toBe("ff0000");
+});
+
+test("gray2hex", () => {
+  expect(gray2hex(0)).toBe("000000");
+  expect(gray2hex(50)).toBe("808080");
+  expect(gray2hex(100)).toBe("ffffff");
+  expect(gray2hex(-10)).toBe("000000");
+  expect(gray2hex(120)).toBe("ffffff");
 });
 
 test("basics rgb -> cmyk", () => {

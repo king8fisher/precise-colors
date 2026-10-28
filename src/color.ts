@@ -362,23 +362,31 @@ export function lchD502css(lch: Lch): string {
 }
 
 /**
+ * Rounds and clamps a channel to `[0..255]`, then formats it as 2 hex digits.
+ * Clamping keeps out-of-gamut values (e.g. from {@link lab2rgb}) from producing
+ * malformed strings like `"-3"` or `"100"`.
+ */
+function byteHex(n: number): string {
+  const hex = Math.min(255, Math.max(0, Math.round(n))).toString(16);
+  return hex.length < 2 ? "0" + hex : hex;
+}
+
+/**
  * Converts {@link Rgb} to 6-digit hex string (without #).
- * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
+ * @param rgb - {@link Rgb} color, r/g/b `[0..255]` (out-of-range values are clamped)
  * @returns Hex string `"rrggbb"` (rounded)
  */
 export function rgb2hex(rgb: Rgb): string {
-  return Math.round(rgb.r).toString(16).padStart(2, "0") +
-    Math.round(rgb.g).toString(16).padStart(2, "0") +
-    Math.round(rgb.b).toString(16).padStart(2, "0");
+  return byteHex(rgb.r) + byteHex(rgb.g) + byteHex(rgb.b);
 }
 
 /**
  * Converts gray value to 6-digit hex string.
- * @param gray - Gray level `[0..100]`
+ * @param gray - Gray level `[0..100]` (out-of-range values are clamped)
  * @returns Hex string `"gggggg"` (rounded)
  */
 export function gray2hex(gray: number): string {
-  const p = Math.round((gray / 100) * 255).toString(16).padStart(2, "0");
+  const p = byteHex((gray / 100) * 255);
   return p + p + p;
 }
 
