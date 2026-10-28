@@ -10,7 +10,7 @@ High-precision color space conversions without intermediate rounding (except `*2
   * Round only at the end using `Math.round` or provided `roundTo`, `*2css`, `*2hex` functions.
 * Make it clear in JSDoc the _input/output ranges_ the user operates on and `{@link Type}` references
 for IDE navigation, preserved in `.d.ts` files.
-* Type-safe Lab illuminants: `LabD65` (traditional) and `LabD50` ([CSS Color 4](https://www.w3.org/TR/css-color-4/#lab-colors)) prevent accidentally mixing values at compile time.
+* Named Lab illuminants: `LabD65` (traditional) and `LabD50` ([CSS Color 4](https://www.w3.org/TR/css-color-4/#lab-colors)) document which white point a value uses (see [Type Safety](#type-safety) for what the compiler checks).
 
 ## Install
 
@@ -32,8 +32,8 @@ const backToLab = lch2lab(lch)
 const xyz = lab2lyz(backToLab)
 const rgb = xyz2rgb({ x: xyz.l, y: xyz.y, z: xyz.z })
 
-// rgb = { r: 127.999997, g: 64.000014, b: 192.000002 }
-// Error: ~0.00001 per channel
+// rgb = { r: 127.99999999999986, g: 64.0000000000001, b: 192.00000000000006 }
+// Error: ~1e-13 per channel
 
 // Final step: round to integers or use output functions
 Math.round(rgb.r)        // 128
@@ -103,13 +103,13 @@ Round-trip precision verified across all 16,777,216 RGB colors:
 
 - **CIE Lab**: Exact rational constants per CIE 15.3 (`ε = 216/24389`, `κ = 24389/27`)
 - **D65 white point**: X=95.047, Y=100, Z=108.883
-- **D50 white point**: X=96.422, Y=100, Z=82.521 (CSS Color 4)
-- **sRGB↔XYZ**: IEC 61966-2-1 matrices (D65 native, D50 Bradford-adapted)
+- **D50 white point**: X=96.422, Y=100, Z=82.521 (ASTM E308; CSS Color 4 derives a slightly different D50 from the chromaticity x=0.3457, y=0.3585)
+- **sRGB↔XYZ**: [Bruce Lindbloom](http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html) 7-digit matrices, derived from the IEC 61966-2-1 sRGB primaries and the white points above (D65 native, D50 Bradford-adapted). The inverse matrices are exact inverses of the forward ones.
 - **Oklab**: [Björn Ottosson matrices](https://bottosson.github.io/posts/oklab/)
 
 ## CSS Color 4 Compatibility
 
-Use `rgb2labD50` / `labD502rgb` for Lab values matching CSS `lab()` function:
+Use `rgb2labD50` / `labD502rgb` for Lab values compatible with the CSS `lab()` function. Because of the white point difference noted above, results agree with the CSS Color 4 reference conversion to within 0.02 Lab units, or within 0.6 per channel when converting back to RGB:
 
 ```ts
 import { rgb2labD50, labD502rgb, LabD50 } from 'precise-colors'
@@ -133,17 +133,19 @@ Oklab is a perceptually uniform color space with better hue linearity than CIE L
 import { rgb2oklab, oklab2rgb, rgb2oklch, oklch2rgb, oklab2css, oklch2css } from 'precise-colors'
 
 const oklab = rgb2oklab({ r: 255, g: 128, b: 64 })
-// → { l: 0.7927, a: 0.0894, b: 0.1191 }
+// → { l: 0.7349, a: 0.1219, b: 0.1223 }
 
 const oklch = rgb2oklch({ r: 255, g: 128, b: 64 })
-// → { l: 0.7927, c: 0.1489, h: 53.12 }
+// → { l: 0.7349, c: 0.1726, h: 45.09 }
 
 // CSS Color 4 output
-oklab2css(oklab)  // "oklab(0.7927 0.0894 0.1191)"
-oklch2css(oklch)  // "oklch(0.7927 0.1489 53.12)"
+oklab2css(oklab)  // "oklab(0.7349 0.1219 0.1223)"
+oklch2css(oklch)  // "oklch(0.7349 0.1726 45.09)"
 ```
 
-CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css`
+CSS output functions: `oklab2css`, `oklch2css`, `labD502css`, `lchD502css`.
+CSS `lch()` uses D50, so pass `lchD502css` an LCH computed from D50 Lab:
+`lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and prints a different colour.
 
 ## LCH vs Oklch
 
@@ -178,20 +180,20 @@ import { rgb2lab, rgb2oklab, deltaE76, deltaE2000, deltaEOk } from 'precise-colo
 const red = rgb2lab({ r: 255, g: 0, b: 0 })
 const orange = rgb2lab({ r: 255, g: 128, b: 0 })
 
-deltaE76(red, orange)    // ~55.6 (simple Euclidean)
-deltaE2000(red, orange)  // ~32.4 (perceptually weighted)
+deltaE76(red, orange)    // ~40.3 (simple Euclidean)
+deltaE2000(red, orange)  // ~21.2 (perceptually weighted)
 
 // Oklab alternative
 const redOk = rgb2oklab({ r: 255, g: 0, b: 0 })
 const orangeOk = rgb2oklab({ r: 255, g: 128, b: 0 })
-deltaEOk(redOk, orangeOk)  // ~0.14
+deltaEOk(redOk, orangeOk)  // ~0.155
 ```
 
 **ΔE interpretation**: 0 = identical, 1 ≈ just noticeable, 2-10 = perceptible at glance, 100 = opposite colors.
 
 ## Type Safety
 
-`LabD65` and `LabD50` are branded types that prevent mixing illuminants:
+`LabD65` and `LabD50` name the illuminant a value uses. In 1.x the compiler does not stop you mixing them: both brands are optional properties under different keys, so each type is assignable to the other. Pass D65 values to D65 functions and D50 values to D50 functions (2.0 enforces this):
 
 ```ts
 import { rgb2labD65, labD652rgb, rgb2labD50, labD502rgb, LabD65, LabD50 } from 'precise-colors'
@@ -202,8 +204,8 @@ const labD50: LabD50 = rgb2labD50({ r: 255, g: 0, b: 0 })
 labD652rgb(labD65) // ✓ Correct: D65 → D65 function
 labD502rgb(labD50) // ✓ Correct: D50 → D50 function
 
-// labD652rgb(labD50) // ✗ TypeScript error: LabD50 not assignable to LabD65
-// labD502rgb(labD65) // ✗ TypeScript error: LabD65 not assignable to LabD50
+// labD652rgb(labD50) // ✗ Wrong: compiles in 1.x, but treats D50 values as D65
+// labD502rgb(labD65) // ✗ Wrong: compiles in 1.x, but treats D65 values as D50
 ```
 
 `Lab` is an alias for `LabD65`. Similarly, `rgb2lab`/`lab2rgb` are aliases for `rgb2labD65`/`labD652rgb`.
@@ -223,7 +225,7 @@ const lch = lab2lch(rgb2lab({ r: 128, g: 64, b: 192 }))
 
 // LCH → RGB
 const rgb = lab2rgb(lch2lab({ l: 50, c: 40, h: 270 }))
-// → { r: 89.5, g: 111.8, b: 178.5 }
+// → { r: 54.35, g: 122.53, b: 186.77 }
 ```
 
 ### LabD65 ↔ LabD50

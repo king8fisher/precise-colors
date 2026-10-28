@@ -44,3 +44,16 @@ only in the git history.
 - `oklch2css` and `lchD502css` printed a meaningless hue for grays, e.g.
   `oklch(1 0 89.88)` for white. When the printed chroma is 0, the hue is now
   printed as 0. The rendered colour is the same.
+
+### Documentation
+
+- Corrected README examples whose outputs were wrong: `rgb2oklab` /
+  `rgb2oklch` of `{ r: 255, g: 128, b: 64 }`, the ΔE values for red vs orange,
+  and `lab2rgb(lch2lab({ l: 50, c: 40, h: 270 }))`.
+- `lchD502css` needs LCH computed from D50 Lab
+  (`lchD502css(lab2lch(rgb2labD50(rgb)))`); the README and JSDoc now say so.
+- The README claimed that `LabD65` and `LabD50` stop you mixing illuminants at
+  compile time. They don't in 1.x, and the README now says so.
+- `rgb2labD50` / `labD502rgb` are now described as compatible with CSS `lab()`
+  rather than matching it: they agree with the CSS Color 4 reference conversion
+  to within 0.02 Lab units (0.6 per channel back in RGB).

@@ -370,8 +370,10 @@ export function labD502css(lab: LabD50): string {
 
 /**
  * Converts {@link Lch} (D50) to CSS lch() string.
- * Note: CSS lch() uses D50 illuminant.
- * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * Note: CSS lch() uses D50 illuminant, so compute the input from D50 Lab:
+ * `lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and
+ * prints a different colour.
+ * @param lch - {@link Lch} color (from D50 Lab), l `[0..100]`, c `[0..~230]`, h `[0..360]`
  * @returns CSS string `"lch(l% c h)"` (rounded to 2 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
  */
