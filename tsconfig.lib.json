@@ -1,0 +1,13 @@
+{
+  // Type-checks the published library sources against ES2016 only. tsconfig.json loads
+  // Bun's types for the tests, and those bring in newer lib typings that would hide
+  // ES2017+ APIs (e.g. String.prototype.padStart) used by mistake in library code.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2016"],
+    "types": [],
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/**/*.test.ts", "src/helpers.ts"]
+}
