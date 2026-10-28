@@ -989,6 +989,24 @@ test("LabD65 and LabD50 types - correct function pairing", () => {
   assertAlmostEquals(backD50.b, rgb.b, 0.01);
 });
 
+test("rgb2labD50 / labD502rgb match the CSS Color 4 reference conversion", () => {
+  // Values from the CSS Color 4 sample code (lin_sRGB → lin_sRGB_to_XYZ → D65_to_D50 → XYZ_to_Lab)
+  const css: [Rgb, LabD50][] = [
+    [{ r: 255, g: 0, b: 0 }, { l: 54.290541, a: 80.804928, b: 69.890965 }],
+    [{ r: 0, g: 255, b: 0 }, { l: 87.818534, a: -79.271061, b: 80.994581 }],
+    [{ r: 0, g: 0, b: 255 }, { l: 29.568302, a: 68.287365, b: -112.02971 }],
+    [{ r: 128, g: 64, b: 192 }, { l: 40.692506, a: 46.224901, b: -57.297631 }],
+    [{ r: 255, g: 128, b: 64 }, { l: 68.046308, a: 46.405552, b: 56.407076 }],
+  ];
+  for (const [rgb, lab] of css) {
+    assertAlmostEqualsColor(rgb2labD50(rgb), lab, 1e-6, JSON.stringify(rgb));
+    assertAlmostEqualsColor(labD502rgb(lab), rgb, 1e-4, JSON.stringify(lab));
+  }
+  assertAlmostEqualsColor(rgb2labD50({ r: 255, g: 255, b: 255 }), { l: 100, a: 0, b: 0 }, 1e-12);
+  expect(labD502css(rgb2labD50({ r: 0, g: 0, b: 255 }))).toBe("lab(29.57% 68.29 -112.03)");
+  expect(lchD502css(labD502lch(rgb2labD50({ r: 0, g: 0, b: 255 })))).toBe("lch(29.57% 131.2 301.36)");
+});
+
 test("LabD65 / LabD50 / LCH - mixing illuminants is a type error", () => {
   const rgb: Rgb = { r: 128, g: 64, b: 192 };
   const d65 = rgb2lab(rgb);

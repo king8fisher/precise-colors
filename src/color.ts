@@ -1144,32 +1144,34 @@ const XYZ_TO_SRGB = {
 const D65: Xyz = { x: 95.047, y: 100, z: 108.883 };
 
 /**
- * D50 white point tristimulus values (ASTM E308-01).
- * Used by CSS Color 4 Lab and ICC profiles.
+ * D50 white point tristimulus values, from the CIE chromaticity x=0.3457, y=0.3585
+ * exactly as CSS Color 4 defines it (ASTM E308 tables give 96.422, 100, 82.521).
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
-const D50: Xyz = { x: 96.422, y: 100, z: 82.521 };
+const D50: Xyz = { x: 0.3457 / 0.3585 * 100, y: 100, z: (1 - 0.3457 - 0.3585) / 0.3585 * 100 };
 
 /**
  * sRGB to XYZ transformation matrix (Bradford-adapted to D50).
- * For CSS Color 4 Lab compatibility.
- * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
+ * The product of the CSS Color 4 `D65_to_D50` and `lin_sRGB_to_XYZ` matrices, so
+ * {@link rgb2labD50} matches CSS `lab()` to floating-point precision.
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const SRGB_TO_XYZ_D50 = {
-  xr: 0.4360747, xg: 0.3850649, xb: 0.1430804,
-  yr: 0.2225045, yg: 0.7168786, yb: 0.0606169,
-  zr: 0.0139322, zg: 0.0971045, zb: 0.7141733,
+  xr: 0.43606574687426947, xg: 0.3851515095901597, xb: 0.1430784199651387,
+  yr: 0.22249317711056527, yg: 0.7168870130944824, yb: 0.060619809794952365,
+  zr: 0.013923921463169401, zg: 0.09708132423141017, zb: 0.7140993568158808,
 };
 
 /**
  * XYZ to sRGB transformation matrix (Bradford-adapted from D50).
  * For CSS Color 4 Lab compatibility.
  * Exact inverse of {@link SRGB_TO_XYZ_D50} in double precision.
- * @see {@link http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html|Bruce Lindbloom}
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const XYZ_D50_TO_SRGB = {
-  rx: 3.133856367791652, ry: -1.6168667702911803, rz: -0.4906147727983015,
-  gx: -0.9787685631270268, gy: 1.9161415526243253, gz: 0.03345411630253724,
-  bx: 0.0719451682817343, by: -0.22899127729888244, bz: 1.4052426741535713,
+  rx: 3.1341358529001178, ry: -1.6173859980180427, rz: -0.4906622179110976,
+  gx: -0.9787954765557783, gy: 1.9162543773959888, gz: 0.03344287339036698,
+  bx: 0.07195539255794739, by: -0.22897675981518206, bz: 1.4053860351131184,
 };
 
 /**

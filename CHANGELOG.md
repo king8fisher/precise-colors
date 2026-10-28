@@ -41,6 +41,14 @@ only in the git history.
 - The brands are a type-only property under a `unique symbol` key. Generic code
   that requires every key of `LabD65` to be a number may need to skip symbol
   keys.
+- `rgb2labD50` and `labD502rgb` now match CSS `lab()` exactly, and so do the
+  `lab()`/`lch()` strings built from them with `labD502css`, `labD502lch` and
+  `lchD502css`. They use the CSS Color 4 constants:
+  D50 white from the chromaticity x=0.3457, y=0.3585 (X=96.4296, Z=82.5105,
+  where 1.x used 96.422 and 82.521), and the spec's sRGB and Bradford matrices.
+  Results move by up to 0.016 Lab units (up to 0.54 per channel back in RGB)
+  and now agree with the CSS reference code to within 1e-12. D65 Lab is
+  unchanged.
 
 ### Added
 
