@@ -1,6 +1,9 @@
-[![npm version](https://img.shields.io/npm/v/precise-colors?logo=npm&labelColor=black&color=07293F)](https://npmjs.com/package/precise-colors)
+[![npm version](https://img.shields.io/npm/v/precise-colors/latest-1?logo=npm&labelColor=black&color=07293F)](https://npmjs.com/package/precise-colors)
 
 # precise-colors
+
+> [!WARNING]
+> This is the **1.x** README; 1.x only receives bug fixes. The current version is **2.x** ([README](https://github.com/king8fisher/precise-colors#readme), [upgrade notes](https://github.com/king8fisher/precise-colors/blob/main/CHANGELOG.md#200---2026-10-28)).
 
 High-precision color space conversions without intermediate rounding (except `*2css`, `*2str`, `*2hex` output functions).
 
@@ -15,8 +18,17 @@ for IDE navigation, preserved in `.d.ts` files.
 ## Install
 
 ```bash
-npm install precise-colors
+npm install precise-colors@1
 ```
+
+## Versions
+
+| Version | Branch | Status | Latest | Install |
+| ------- | ------ | ------ | ------ | ------- |
+| 2.x | [`main`](https://github.com/king8fisher/precise-colors/tree/main) | Current | [![2.x](https://img.shields.io/npm/v/precise-colors/latest?label=&color=07293F)](https://www.npmjs.com/package/precise-colors?activeTab=versions) | `npm install precise-colors` |
+| 1.x | [`1.x`](https://github.com/king8fisher/precise-colors/tree/1.x) | Bug fixes only | [![1.x](https://img.shields.io/npm/v/precise-colors/latest-1?label=&color=07293F)](https://www.npmjs.com/package/precise-colors?activeTab=versions) | `npm install precise-colors@1` |
+
+Upgrading from 1.x: see the [2.0.0 changes](https://github.com/king8fisher/precise-colors/blob/main/CHANGELOG.md#200---2026-10-28).
 
 ## Usage
 
