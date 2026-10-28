@@ -127,10 +127,13 @@ interface LabBase {
   readonly b: number;
 }
 
-/** Brand symbol for D65 illuminant */
-declare const D65Brand: unique symbol;
-/** Brand symbol for D50 illuminant */
-declare const D50Brand: unique symbol;
+/**
+ * Brand key for the illuminant of Lab and LCH values (compile-time only).
+ * D65 and D50 types share this one key with different literal types, so a D50
+ * value is rejected where a D65 one is expected (and vice versa), while plain
+ * `{ l, a, b }` objects are accepted by either.
+ */
+declare const Illuminant: unique symbol;
 
 /**
  * CIE L*a*b* color with D65 illuminant (traditional Lab).
@@ -141,19 +144,19 @@ declare const D50Brand: unique symbol;
  */
 export interface LabD65 extends LabBase {
   /** Type brand for D65 illuminant (compile-time only) */
-  readonly [D65Brand]?: never;
+  readonly [Illuminant]?: "D65";
 }
 
 /**
  * CIE L*a*b* color with D50 illuminant (CSS Color 4 compatible).
  *
- * Used by: {@link rgb2labD50}, {@link labD502rgb}
+ * Used by: {@link rgb2labD50}, {@link labD502rgb}, {@link labD502lch}, {@link lch2labD50}, {@link labD502css}
  *
  * @see {@link https://www.w3.org/TR/css-color-4/#lab-colors|W3C CSS Color 4}
  */
 export interface LabD50 extends LabBase {
   /** Type brand for D50 illuminant (compile-time only) */
-  readonly [D50Brand]?: never;
+  readonly [Illuminant]?: "D50";
 }
 
 /**
@@ -198,13 +201,14 @@ export interface Lyz {
 /**
  * CIE LCH cylindrical color space (Lightness, Chroma, Hue).
  * Polar representation of L*a*b*.
+ * Use {@link LchD65} or {@link LchD50} for type-safe illuminant handling.
  * @property {number} l - Lightness `[0..100]`
  * @property {number} c - Chroma `[0..~230]`
  * @property {number} h - Hue `[0..360]`
  * @see {@link https://en.wikipedia.org/wiki/CIELAB_color_space#Cylindrical_model|Wikipedia}
  * @see {@link https://www.w3.org/TR/css-color-4/#cie-lab|W3C CSS Color 4}
  */
-export interface Lch {
+interface LchBase {
   /** Lightness `[0..100]` */
   readonly l: number;
   /** Chroma `[0..~230]`. Theoretically unbounded, sRGB max ~131 */
@@ -212,6 +216,33 @@ export interface Lch {
   /** Hue angle `[0..360]` */
   readonly h: number;
 }
+
+/**
+ * CIE LCH from {@link LabD65}.
+ *
+ * Used by: {@link lab2lch}, {@link lch2lab}
+ */
+export interface LchD65 extends LchBase {
+  /** Type brand for D65 illuminant (compile-time only) */
+  readonly [Illuminant]?: "D65";
+}
+
+/**
+ * CIE LCH from {@link LabD50}, as used by CSS `lch()`.
+ *
+ * Used by: {@link labD502lch}, {@link lch2labD50}, {@link lchD502css}
+ *
+ * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ */
+export interface LchD50 extends LchBase {
+  /** Type brand for D50 illuminant (compile-time only) */
+  readonly [Illuminant]?: "D50";
+}
+
+/**
+ * Alias for {@link LchD65}.
+ */
+export type Lch = LchD65;
 
 /**
  * Oklab color space - perceptually uniform color space.
@@ -391,16 +422,14 @@ export function labD502css(lab: LabD50, alpha?: number): string {
 }
 
 /**
- * Converts {@link Lch} (D50) to CSS lch() string.
- * Note: CSS lch() uses D50 illuminant, so compute the input from D50 Lab:
- * `lchD502css(lab2lch(rgb2labD50(rgb)))`. `lab2lch(rgb2lab(rgb))` is D65 and
- * prints a different colour.
- * @param lch - {@link Lch} color (from D50 Lab), l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * Converts {@link LchD50} to CSS lch() string.
+ * CSS lch() uses the D50 illuminant: `lchD502css(labD502lch(rgb2labD50(rgb)))`.
+ * @param lch - {@link LchD50} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
  * @param alpha - Optional alpha `[0..1]`, printed as `" / a"` (rounded to 2 decimals)
  * @returns CSS string `"lch(l% c h)"` (rounded to 2 decimals)
  * @see {@link https://www.w3.org/TR/css-color-4/#specifying-lab-lch|W3C CSS Color 4}
  */
-export function lchD502css(lch: Lch, alpha?: number): string {
+export function lchD502css(lch: LchD50, alpha?: number): string {
   const c = roundTo(lch.c, 2);
   // Without chroma the hue is floating-point noise, so print 0
   const h = c === 0 ? 0 : roundTo(lch.h, 2);
@@ -1490,12 +1519,8 @@ export function lab2lyz(lab: LabD65): Lyz {
   };
 }
 
-/**
- * Converts {@link LabD65} to {@link Lch}.
- * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
- * @returns color - {@link Lch}, l `[0..100]`, c `[0..~230]`, h `[0..360]`
- */
-export function lab2lch(lab: LabD65): Lch {
+/** Lab → LCH, shared by the D65 and D50 variants. */
+function labToLch(lab: LabBase): LchBase {
   let h: number;
   const hr: number = Math.atan2(lab.b, lab.a);
   h = hr * 360.0 / 2.0 / Math.PI;
@@ -1510,12 +1535,8 @@ export function lab2lch(lab: LabD65): Lch {
   };
 }
 
-/**
- * Converts {@link Lch} to {@link LabD65}.
- * @param lch - {@link Lch} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
- * @returns color - {@link LabD65}, l `[0..100]`, a/b `[-128..127]`
- */
-export function lch2lab(lch: Lch): LabD65 {
+/** LCH → Lab, shared by the D65 and D50 variants. */
+function lchToLab(lch: LchBase): LabBase {
   const hr: number = lch.h / 360.0 * 2 * Math.PI;
   const a: number = lch.c * Math.cos(hr);
   const b: number = lch.c * Math.sin(hr);
@@ -1524,6 +1545,42 @@ export function lch2lab(lch: Lch): LabD65 {
     a: a,
     b: b,
   };
+}
+
+/**
+ * Converts {@link LabD65} to {@link LchD65}.
+ * @param lab - {@link LabD65} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LchD65}, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ */
+export function lab2lch(lab: LabD65): LchD65 {
+  return labToLch(lab);
+}
+
+/**
+ * Converts {@link LchD65} to {@link LabD65}.
+ * @param lch - {@link LchD65} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @returns color - {@link LabD65}, l `[0..100]`, a/b `[-128..127]`
+ */
+export function lch2lab(lch: LchD65): LabD65 {
+  return lchToLab(lch);
+}
+
+/**
+ * Converts {@link LabD50} to {@link LchD50}, the form CSS `lch()` uses.
+ * @param lab - {@link LabD50} color, l `[0..100]`, a/b `[-128..127]`
+ * @returns color - {@link LchD50}, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ */
+export function labD502lch(lab: LabD50): LchD50 {
+  return labToLch(lab);
+}
+
+/**
+ * Converts {@link LchD50} to {@link LabD50}.
+ * @param lch - {@link LchD50} color, l `[0..100]`, c `[0..~230]`, h `[0..360]`
+ * @returns color - {@link LabD50}, l `[0..100]`, a/b `[-128..127]`
+ */
+export function lch2labD50(lch: LchD50): LabD50 {
+  return lchToLab(lch);
 }
 
 /**

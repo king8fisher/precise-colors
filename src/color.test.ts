@@ -7,6 +7,7 @@ import {
   Oklch,
   apple2rgb,
   cmyk2rgb,
+  deltaE2000,
   gray2cmyk,
   gray2hex,
   gray2hsl,
@@ -28,7 +29,9 @@ import {
   lab2lyz,
   lab2rgb,
   labD502css,
+  labD502lch,
   labD502rgb,
+  lch2labD50,
   lch2lab,
   lchD502css,
   modulo,
@@ -986,6 +989,33 @@ test("LabD65 and LabD50 types - correct function pairing", () => {
   assertAlmostEquals(backD50.b, rgb.b, 0.01);
 });
 
+test("LabD65 / LabD50 / LCH - mixing illuminants is a type error", () => {
+  const rgb: Rgb = { r: 128, g: 64, b: 192 };
+  const d65 = rgb2lab(rgb);
+  const d50 = rgb2labD50(rgb);
+  // Each line below must fail to type-check: tsc -p . reports an unused @ts-expect-error otherwise
+  // @ts-expect-error D50 Lab passed to a D65 function
+  lab2rgb(d50);
+  // @ts-expect-error D65 Lab passed to a D50 function
+  labD502rgb(d65);
+  // @ts-expect-error D50 Lab passed to the D65 LCH conversion
+  lab2lch(d50);
+  // @ts-expect-error D65 LCH printed as CSS lch(), which is D50
+  lchD502css(lab2lch(d65));
+  // @ts-expect-error mixing illuminants in a colour difference
+  deltaE2000(d65, d50);
+  // @ts-expect-error assigning across illuminants
+  const wrong: LabD65 = d50;
+  expect(wrong.l).toBe(d50.l);
+
+  // Same-illuminant values and plain objects are accepted
+  expect(deltaE2000(d50, rgb2labD50(rgb))).toBe(0);
+  expect(deltaE2000(d65, { l: d65.l, a: d65.a, b: d65.b })).toBe(0);
+  assertAlmostEqualsColor(lch2labD50(labD502lch(d50)), d50, 1e-12);
+  const viaD65 = lab2lch({ l: d50.l, a: d50.a, b: d50.b }); // same maths, different brand
+  assertAlmostEqualsColor(labD502lch(d50), { l: viaD65.l, c: viaD65.c, h: viaD65.h }, 0);
+});
+
 // ============================================================================
 // gray2cmyk Tests
 // Reference: https://www.rapidtables.com/convert/color/rgb-to-cmyk.html
@@ -1302,6 +1332,6 @@ test("oklch2css / lchD502css - achromatic colors print hue 0", () => {
   expect(oklch2css(rgb2oklch({ r: 0, g: 0, b: 0 }))).toBe("oklch(0 0 0)");
   expect(oklch2css({ l: 0.5, c: 0.00004, h: 200 })).toBe("oklch(0.5 0 0)");
   expect(oklch2css({ l: 0.5, c: 0.00005, h: 200 })).toBe("oklch(0.5 0.0001 200)");
-  expect(lchD502css(lab2lch(rgb2labD50({ r: 128, g: 128, b: 128 })))).toMatch(/^lch\([\d.]+% 0 0\)$/);
+  expect(lchD502css(labD502lch(rgb2labD50({ r: 128, g: 128, b: 128 })))).toMatch(/^lch\([\d.]+% 0 0\)$/);
   expect(lchD502css({ l: 50, c: 0.004, h: 90 })).toBe("lch(50% 0 0)");
 });

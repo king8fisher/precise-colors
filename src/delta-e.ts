@@ -8,7 +8,13 @@
  * @see {@link http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE2000.html|Bruce Lindbloom}
  */
 
-import type { Lab, Oklab } from "./color";
+import type { LabD50, LabD65, Oklab } from "./color";
+
+/**
+ * Lab of either illuminant. The ΔE formulas work on any Lab, but both colours
+ * must use the same white point: the generic parameter rejects a D65/D50 mix.
+ */
+type AnyLab = LabD65 | LabD50;
 
 /**
  * CIE76 color difference (ΔE*ab).
@@ -16,12 +22,12 @@ import type { Lab, Oklab } from "./color";
  * Simple Euclidean distance in Lab color space.
  * Fast but not perceptually uniform for large differences.
  *
- * @param lab1 - First Lab color
- * @param lab2 - Second Lab color
+ * @param lab1 - First Lab color ({@link LabD65} or {@link LabD50})
+ * @param lab2 - Second Lab color, same illuminant as `lab1`
  * @returns ΔE value (0 = identical, 1 ≈ JND "Just Noticeable Difference", 100 = max difference)
  * @see {@link https://en.wikipedia.org/wiki/Color_difference#CIE76|Wikipedia CIE76}
  */
-export function deltaE76(lab1: Lab, lab2: Lab): number {
+export function deltaE76<T extends AnyLab>(lab1: T, lab2: T): number {
   const dL = lab1.l - lab2.l;
   const da = lab1.a - lab2.a;
   const db = lab1.b - lab2.b;
@@ -55,17 +61,17 @@ export function deltaEOk(oklab1: Oklab, oklab2: Oklab): number {
  * Uses "graphic arts" weights by default (kL=1, K1=0.045, K2=0.015).
  * For textiles, use kL=2, K1=0.048, K2=0.014.
  *
- * @param lab1 - First Lab color (reference)
- * @param lab2 - Second Lab color (sample)
+ * @param lab1 - First Lab color (reference), {@link LabD65} or {@link LabD50}
+ * @param lab2 - Second Lab color (sample), same illuminant as `lab1`
  * @param kL - Lightness weight (1 for graphics, 2 for textiles)
  * @param K1 - Chroma weight factor (0.045 graphics, 0.048 textiles)
  * @param K2 - Hue weight factor (0.015 graphics, 0.014 textiles)
  * @returns ΔE*94 value
  * @see {@link https://en.wikipedia.org/wiki/Color_difference#CIE94|Wikipedia CIE94}
  */
-export function deltaE94(
-  lab1: Lab,
-  lab2: Lab,
+export function deltaE94<T extends AnyLab>(
+  lab1: T,
+  lab2: T,
   kL: number = 1,
   K1: number = 0.045,
   K2: number = 0.015
@@ -106,8 +112,8 @@ export function deltaE94(
  * - **SC** (Chroma): Scales with color saturation
  * - **SH** (Hue): Accounts for hue-dependent perception
  *
- * @param lab1 - First Lab color (reference)
- * @param lab2 - Second Lab color (sample)
+ * @param lab1 - First Lab color (reference), {@link LabD65} or {@link LabD50}
+ * @param lab2 - Second Lab color (sample), same illuminant as `lab1`
  * @param kL - Lightness weight (default 1)
  * @param kC - Chroma weight (default 1)
  * @param kH - Hue weight (default 1)
@@ -115,9 +121,9 @@ export function deltaE94(
  * @see {@link http://www.brucelindbloom.com/index.html?Eqn_DeltaE_CIE2000.html|Bruce Lindbloom}
  * @see {@link https://en.wikipedia.org/wiki/Color_difference#CIEDE2000|Wikipedia CIEDE2000}
  */
-export function deltaE2000(
-  lab1: Lab,
-  lab2: Lab,
+export function deltaE2000<T extends AnyLab>(
+  lab1: T,
+  lab2: T,
   kL: number = 1,
   kC: number = 1,
   kH: number = 1

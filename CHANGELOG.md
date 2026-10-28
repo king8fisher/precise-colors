@@ -27,11 +27,27 @@ only in the git history.
   `rgb(128,64,192)`, `rgba(128,64,192,0.5)` and `hsl(26.09deg,51.57%,43.73%)`.
   Both forms are valid CSS. Update any code that parses or compares these
   strings. `rgb2str` still returns `"r,g,b"`.
+- **Breaking (types):** `LabD65` and `LabD50` are now enforced. Passing D50
+  Lab to a D65 function (or the reverse) is a compile error, as the README
+  always claimed; in 1.x both types were silently assignable to each other.
+  Plain `{ l, a, b }` objects are still accepted by either.
+- **Breaking (types):** LCH is branded the same way. `Lch` is now an alias for
+  the new `LchD65`, and `lchD502css` takes the new `LchD50`, so the common
+  mistake `lchD502css(lab2lch(rgb2lab(rgb)))`, which printed D65 values as CSS
+  `lch()` and gave a visibly different colour, no longer compiles. Use
+  `lchD502css(labD502lch(rgb2labD50(rgb)))`.
+- `deltaE76`, `deltaE94` and `deltaE2000` accept `LabD65` or `LabD50`, but both
+  arguments must use the same illuminant.
+- The brands are a type-only property under a `unique symbol` key. Generic code
+  that requires every key of `LabD65` to be a number may need to skip symbol
+  keys.
 
 ### Added
 
 - `rgb2hsv`, a direct RGB → HSV conversion (previously only available through
   `hsl2hsv(rgb2hsl(rgb))`, which gives the same result).
+- `labD502lch` and `lch2labD50`, with the `LchD50` and `LchD65` types, for CSS
+  `lch()` values.
 
 ## [1.2.0] - 2026-10-28
 

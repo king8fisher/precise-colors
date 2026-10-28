@@ -19,7 +19,8 @@ delta "${f(delta)}" is greater than "${f(tolerance)}"${msgSuffix}`
 }
 
 export type ColorComponent<T> = {
-  [K in keyof T]: number;
+  // Symbol keys are compile-time brands (the Lab/LCH illuminant), not components
+  [K in keyof T as K extends string ? K : never]: number;
 };
 
 export function typedObjectKeys<T extends object>(obj: T): (keyof T)[] {
@@ -42,6 +43,6 @@ export function multiplyColor<T extends object>(obj: T, by: number): T {
 
 export function assertAlmostEqualsColor<T extends ColorComponent<T>>(actual: T, expected: T, tolerance = 1e-7, msg?: string) {
   typedObjectKeys(actual).forEach((k) => {
-    assertAlmostEquals(actual[k], expected[k], tolerance, msg);
+    assertAlmostEquals(actual[k] as number, expected[k] as number, tolerance, msg);
   });
 }
