@@ -1176,44 +1176,46 @@ const XYZ_D50_TO_SRGB = {
 
 /**
  * Linear sRGB to LMS matrix for Oklab.
+ * The product of the CSS Color 4 `XYZ_to_OKLab` LMS matrix and `lin_sRGB_to_XYZ`
+ * (Ottosson's matrices as revised for CSS), so {@link rgb2oklab} matches CSS `oklab()`.
  * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const SRGB_TO_LMS = {
-  lr: 0.4122214708, lg: 0.5363325363, lb: 0.0514459929,
-  mr: 0.2119034982, mg: 0.6806995451, mb: 0.1073969566,
-  sr: 0.0883024619, sg: 0.2817188376, sb: 0.6299787005,
+  lr: 0.41222146947076305, lg: 0.5363325372617348, lb: 0.05144599326750221,
+  mr: 0.21190349581782522, mg: 0.6806995506452344, mb: 0.10739695353694056,
+  sr: 0.08830245919005643, sg: 0.2817188391361215, sb: 0.6299787016738222,
 };
 
 /**
- * LMS (after cube root) to Oklab matrix.
- * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * LMS (after cube root) to Oklab matrix, from the CSS Color 4 sample code.
+ * Its rows are balanced so that white maps to L = 1, a = b = 0.
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const LMS_TO_OKLAB = {
-  ll: 0.2104542553, lm: 0.7936177850, ls: -0.0040720468,
-  al: 1.9779984951, am: -2.4285922050, as: 0.4505937099,
-  bl: 0.0259040371, bm: 0.7827717662, bs: -0.8086757660,
+  ll: 0.210454268309314, lm: 0.7936177747023054, ls: -0.0040720430116193,
+  al: 1.9779985324311684, am: -2.42859224204858, as: 0.450593709617411,
+  bl: 0.0259040424655478, bm: 0.7827717124575296, bs: -0.8086757549230774,
 };
 
 /**
- * Oklab to LMS (before cubing) matrix - inverse of LMS_TO_OKLAB.
- * Exact inverse in double precision; the published 10-digit inverse is off by up to 6e-8.
- * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * Oklab to LMS (before cubing) matrix - exact inverse of LMS_TO_OKLAB in double precision.
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const OKLAB_TO_LMS = {
-  ll: 0.9999999984505199, lm: 0.39633779217376786, ls: 0.2158037580607588,
-  ml: 1.0000000088817607, mm: -0.10556134232365634, ms: -0.0638541747717059,
-  sl: 1.000000054672411, sm: -0.08948418209496577, ss: -1.291485537864092,
+  ll: 1.0000000000000002, lm: 0.39633777737617504, ls: 0.21580375730991364,
+  ml: 1, mm: -0.10556134581565856, ms: -0.06385417282581334,
+  sl: 1, sm: -0.08948417752981182, ss: -1.2914855480194094,
 };
 
 /**
- * LMS to linear sRGB matrix - inverse of SRGB_TO_LMS.
- * Exact inverse in double precision.
- * @see {@link https://bottosson.github.io/posts/oklab/|Oklab}
+ * LMS to linear sRGB matrix - exact inverse of SRGB_TO_LMS in double precision.
+ * @see {@link https://www.w3.org/TR/css-color-4/#color-conversion-code|CSS Color 4 sample code}
  */
 const LMS_TO_SRGB = {
-  rl: 4.076741661347994, rm: -3.3077115904081933, rs: 0.23096992872942784,
-  gl: -1.268438004092176, gm: 2.6097574006633715, gs: -0.34131939631021946,
-  bl: -0.004196086541837046, bm: -0.7034186144594494, bs: 1.7076147009309446,
+  rl: 4.076741636075957, rm: -3.3077115392580616, rs: 0.2309699031821044,
+  gl: -1.2684379732850315, gm: 2.609757349287689, gs: -0.3413193760026573,
+  bl: -0.004196076138675533, bm: -0.7034186179359364, bs: 1.707614694074612,
 };
 
 /**

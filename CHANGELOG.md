@@ -49,6 +49,11 @@ only in the git history.
   Results move by up to 0.016 Lab units (up to 0.54 per channel back in RGB)
   and now agree with the CSS reference code to within 1e-12. D65 Lab is
   unchanged.
+- Oklab uses the CSS Color 4 matrices (Ottosson's, as revised for CSS) with
+  exact inverses. Oklab values move by at most 4e-8; white is now exactly
+  `L = 1` (was 0.9999999935) and grays have `a`, `b` within 1e-15 of zero (was
+  ~4e-8). `oklab2rgb` now matches the CSS reference conversion to ~1e-11 per
+  channel (was 4e-4).
 
 ### Added
 
