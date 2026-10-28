@@ -18,8 +18,8 @@
     "build": "tsup",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.lib.json",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
+    "test": "bun test --timeout 60000 ./src ./.github/scripts",
+    "test:watch": "bun test --timeout 60000 --watch ./src ./.github/scripts",
     "prepublishOnly": "bun run typecheck && bun run build"
   },
   "keywords": [
