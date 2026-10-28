@@ -1211,3 +1211,12 @@ test("lchD502css - format", () => {
   const css = lchD502css({ l: 54.29, c: 106.84, h: 40.85 });
   expect(css).toBe("lch(54.29% 106.84 40.85)");
 });
+
+test("oklch2css / lchD502css - achromatic colors print hue 0", () => {
+  expect(oklch2css(rgb2oklch({ r: 255, g: 255, b: 255 }))).toBe("oklch(1 0 0)");
+  expect(oklch2css(rgb2oklch({ r: 0, g: 0, b: 0 }))).toBe("oklch(0 0 0)");
+  expect(oklch2css({ l: 0.5, c: 0.00004, h: 200 })).toBe("oklch(0.5 0 0)");
+  expect(oklch2css({ l: 0.5, c: 0.00005, h: 200 })).toBe("oklch(0.5 0.0001 200)");
+  expect(lchD502css(lab2lch(rgb2labD50({ r: 128, g: 128, b: 128 })))).toMatch(/^lch\([\d.]+% 0 0\)$/);
+  expect(lchD502css({ l: 50, c: 0.004, h: 90 })).toBe("lch(50% 0 0)");
+});

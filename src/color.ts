@@ -352,7 +352,10 @@ export function oklab2css(oklab: Oklab): string {
  * @see {@link https://www.w3.org/TR/css-color-4/#ok-lch|W3C CSS Color 4}
  */
 export function oklch2css(oklch: Oklch): string {
-  return `oklch(${roundTo(oklch.l, 4)} ${roundTo(oklch.c, 4)} ${roundTo(oklch.h, 2)})`;
+  const c = roundTo(oklch.c, 4);
+  // Without chroma the hue is floating-point noise (white gives ~89.88), so print 0
+  const h = c === 0 ? 0 : roundTo(oklch.h, 2);
+  return `oklch(${roundTo(oklch.l, 4)} ${c} ${h})`;
 }
 
 /**
@@ -373,7 +376,10 @@ export function labD502css(lab: LabD50): string {
  * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
  */
 export function lchD502css(lch: Lch): string {
-  return `lch(${roundTo(lch.l, 2)}% ${roundTo(lch.c, 2)} ${roundTo(lch.h, 2)})`;
+  const c = roundTo(lch.c, 2);
+  // Without chroma the hue is floating-point noise, so print 0
+  const h = c === 0 ? 0 : roundTo(lch.h, 2);
+  return `lch(${roundTo(lch.l, 2)}% ${c} ${h})`;
 }
 
 /**

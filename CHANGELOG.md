@@ -41,3 +41,6 @@ only in the git history.
   the forward ones, so round trips such as `lab2rgb(rgb2lab(rgb))` drifted by up
   to 4e-4 per channel. The inverses are now exact, and round trips are accurate
   to about 1e-11. The forward conversions are unchanged.
+- `oklch2css` and `lchD502css` printed a meaningless hue for grays, e.g.
+  `oklch(1 0 89.88)` for white. When the printed chroma is 0, the hue is now
+  printed as 0. The rendered colour is the same.
