@@ -30,6 +30,7 @@ import {
   labD502rgb,
   lch2lab,
   lchD502css,
+  modulo,
   oklab2css,
   oklab2oklch,
   oklab2rgb,
@@ -211,6 +212,35 @@ test("gray2hex", () => {
   expect(gray2hex(100)).toBe("ffffff");
   expect(gray2hex(-10)).toBe("000000");
   expect(gray2hex(120)).toBe("ffffff");
+});
+
+test("modulo - exact for in-range values, positive for negative values", () => {
+  expect(modulo(0.1, 360)).toBe(0.1);
+  expect(modulo(0.3, 1)).toBe(0.3);
+  expect(modulo(359.9, 360)).toBe(359.9);
+  expect(modulo(360, 360)).toBe(0);
+  expect(modulo(725, 360)).toBe(5);
+  expect(modulo(-90, 360)).toBe(270);
+  expect(Object.is(modulo(-0, 360), 0)).toBe(true);
+  expect(modulo(-1e-17, 360)).toBe(0); // -1e-17 + 360 rounds to 360, which must wrap to 0
+});
+
+test("hue-based conversions wrap angles outside [0, 360)", () => {
+  for (let h = 0; h < 360; h += 7.5) {
+    for (const s of [0, 40, 100]) {
+      for (const l of [10, 50, 90]) {
+        for (const turns of [-2, -1, 1, 2]) {
+          const msg = `h=${h} vs h=${h + turns * 360}`;
+          assertAlmostEqualsColor(hsl2rgb({ h: h + turns * 360, s, l }), hsl2rgb({ h, s, l }), 1e-9, "hsl " + msg);
+          assertAlmostEqualsColor(hwb2rgb({ h: h + turns * 360, w: s / 2, b: l / 2 }), hwb2rgb({ h, w: s / 2, b: l / 2 }), 1e-9, "hwb " + msg);
+          assertAlmostEqualsColor(hsv2rgb({ h: h + turns * 360, s, v: l }), hsv2rgb({ h, s, v: l }), 1e-9, "hsv " + msg);
+          assertAlmostEqualsColor(hcg2rgb({ h: h + turns * 360, c: s, g: l }), hcg2rgb({ h, c: s, g: l }), 1e-9, "hcg " + msg);
+        }
+      }
+    }
+  }
+  assertAlmostEqualsColor(hsl2rgb({ h: 720, s: 100, l: 50 }), { r: 255, g: 0, b: 0 });
+  assertAlmostEqualsColor(hwb2rgb({ h: -30, w: 0, b: 0 }), { r: 255, g: 0, b: 127.5 });
 });
 
 test("hwb2hcg - w + b > 100 normalizes to gray like hwb2rgb", () => {

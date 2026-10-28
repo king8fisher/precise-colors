@@ -268,7 +268,13 @@ export function roundTo(num: number, places: number) {
  * @returns `x mod n`, always positive
  */
 export function modulo(x: number, n: number): number {
-  return ((x % n) + n) % n;
+  if (!(n > 0)) {
+    return ((x % n) + n) % n;
+  }
+  const r = x % n;
+  // Shift only negative remainders: adding n to every value rounds it,
+  // e.g. (0.1 + 360) % 360 = 0.10000000000002274. `+ 0` turns -0 into 0.
+  return r < 0 ? (r + n) % n : r + 0;
 }
 
 /**
@@ -420,11 +426,11 @@ export function hex2rgb(input: string): Rgb {
 
 /**
  * Converts {@link Hsl} to {@link Rgb}.
- * @param hsl - {@link Hsl} color, h `[0..360]`, s/l `[0..100]`
+ * @param hsl - {@link Hsl} color, h `[0..360]` (other angles wrap), s/l `[0..100]`
  * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hsl2rgb(hsl: Hsl): Rgb {
-  const h = hsl.h / 360;
+  const h = modulo(hsl.h, 360) / 360;
   const s = hsl.s / 100;
   const l = hsl.l / 100;
   let t2: number;
@@ -741,11 +747,11 @@ export function rgb2hwb(rgb: Rgb): Hwb {
 
 /**
  * Converts {@link Hwb} to {@link Rgb}.
- * @param hwb - {@link Hwb} color, h `[0..360]`, w/b `[0..100]`
+ * @param hwb - {@link Hwb} color, h `[0..360]` (other angles wrap), w/b `[0..100]`
  * @returns color - {@link Rgb}, r/g/b `[0..255]` (not rounded)
  */
 export function hwb2rgb(hwb: Hwb): Rgb {
-  const h = hwb.h / 360;
+  const h = modulo(hwb.h, 360) / 360;
   let w = hwb.w / 100;
   let b = hwb.b / 100;
   const ratio = w + b;

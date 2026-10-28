@@ -27,3 +27,9 @@ only in the git history.
 - `hwb2hcg` returned negative chroma when whiteness + blackness exceeded 100,
   so `hwb2hcg({ h: 0, w: 100, b: 100 })` described cyan instead of 50% gray.
   It now normalizes w and b the same way `hwb2rgb` (and CSS) do.
+- `hsl2rgb` and `hwb2rgb` returned wrong colours for hues outside `[0, 360]`
+  (e.g. `hsl2rgb({ h: 720, s: 100, l: 50 })` gave black, and
+  `hwb2rgb({ h: -30, w: 0, b: 0 })` gave orange instead of pink). Hues now wrap,
+  as they already did in `hsv2rgb` and `hcg2rgb`.
+- `modulo` no longer loses precision on values that are already in range:
+  `modulo(0.1, 360)` returned `0.10000000000002274` and now returns `0.1`.
