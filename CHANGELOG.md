@@ -10,6 +10,8 @@ only in the git history.
 ### Added
 
 - The package now includes this CHANGELOG.
+- `rgb2str` takes an optional separator: `rgb2str(rgb, " ")` gives `"r g b"`.
+  The default is still `","`.
 
 ### Fixed
 

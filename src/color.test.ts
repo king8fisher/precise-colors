@@ -40,6 +40,7 @@ import {
   Rgb,
   rgb2cmyk,
   rgb2hex,
+  rgb2str,
   rgb2hsl,
   rgb2hwb,
   rgb2lab,
@@ -288,6 +289,14 @@ test("hwb2hcg -> hcg2rgb matches hwb2rgb", () => {
       }
     }
   }
+});
+
+test("rgb2str - optional separator", () => {
+  const rgb = { r: 12.5, g: 0.4, b: 254.6 };
+  expect(rgb2str(rgb)).toBe("13,0,255");
+  expect(rgb2str(rgb, " ")).toBe("13 0 255");
+  expect(rgb2str(rgb, ", ")).toBe("13, 0, 255");
+  expect(rgb2str(rgb, "")).toBe("130255");
 });
 
 test("hwb2css - space-separated syntax (hwb() has no comma form)", () => {

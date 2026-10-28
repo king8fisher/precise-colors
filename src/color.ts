@@ -294,12 +294,13 @@ export function rgb2css(rgb: Rgb): string {
 }
 
 /**
- * Converts {@link Rgb} to comma-separated string.
+ * Converts {@link Rgb} to a string of channels joined by `sep`.
  * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @returns String `"r,g,b"` (rounded)
+ * @param sep - Separator between channels, `","` by default
+ * @returns String `"r,g,b"` (rounded), e.g. `"r g b"` with `sep = " "`
  */
-export function rgb2str(rgb: Rgb): string {
-  return `${Math.round(rgb.r)},${Math.round(rgb.g)},${Math.round(rgb.b)}`;
+export function rgb2str(rgb: Rgb, sep: string = ","): string {
+  return `${Math.round(rgb.r)}${sep}${Math.round(rgb.g)}${sep}${Math.round(rgb.b)}`;
 }
 
 /**
