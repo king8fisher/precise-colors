@@ -232,7 +232,7 @@ export interface LchD65 extends LchBase {
  *
  * Used by: {@link labD502lch}, {@link lch2labD50}, {@link lchD502css}
  *
- * @see {@link https://www.w3.org/TR/css-color-4/#lch-colors|W3C CSS Color 4}
+ * @see {@link https://www.w3.org/TR/css-color-4/#specifying-lab-lch|W3C CSS Color 4}
  */
 export interface LchD50 extends LchBase {
   /** Type brand for D50 illuminant (compile-time only) */
@@ -345,19 +345,6 @@ export function rgb2css(rgb: Rgb, alpha?: number): string {
  */
 export function rgb2str(rgb: Rgb, sep: string = ","): string {
   return `${Math.round(rgb.r)}${sep}${Math.round(rgb.g)}${sep}${Math.round(rgb.b)}`;
-}
-
-/**
- * Converts {@link Rgb} and alpha to a CSS rgb() string with alpha.
- * @deprecated Use {@link rgb2css} with its `alpha` argument, which returns the same
- * string: `rgb2css(rgb, alpha)`. `rgba2css` will be removed in 2.0.
- * @param rgb - {@link Rgb} color, r/g/b `[0..255]`
- * @param alpha - Alpha `[0..1]`
- * @returns CSS string `"rgb(r g b / a)"` (rounded)
- * @see {@link https://www.w3.org/TR/css-color-4/#rgb-functions|W3C CSS Color 4}
- */
-export function rgba2css(rgb: Rgb, alpha: number): string {
-  return rgb2css(rgb, alpha);
 }
 
 /**

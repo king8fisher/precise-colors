@@ -17,38 +17,39 @@ only in the git history.
   colour (including non-strings), instead of black, so invalid input can no
   longer be mistaken for `#000000`. Its return type is now `Rgb | null`; use
   `hex2rgb(x) ?? fallback`, or `hex2rgb(x)!` when the input is known to be valid.
-- `roundTo` rounds halves away from zero, so negative values mirror positive
-  ones: `roundTo(-1.005, 2)` is now `-1.01` (was `-1`) and `roundTo(-2.5, 0)` is
-  `-3` (was `-2`). This affects negative values printed by the `*2css`
-  functions, such as Lab `a`/`b` in `labD502css`.
-- `rgb2css`, `rgba2css` and `hsl2css` use the CSS Color 4 space-separated
-  syntax, like the other `*2css` functions: `rgb(128 64 192)`,
-  `rgb(128 64 192 / 0.5)` and `hsl(26.09deg 51.57% 43.73%)` instead of
-  `rgb(128,64,192)`, `rgba(128,64,192,0.5)` and `hsl(26.09deg,51.57%,43.73%)`.
-  Both forms are valid CSS. Update any code that parses or compares these
-  strings. `rgb2str` still returns `"r,g,b"`.
 - **Breaking (types):** `LabD65` and `LabD50` are now enforced. Passing D50
   Lab to a D65 function (or the reverse) is a compile error, as the README
   always claimed; in 1.x both types were silently assignable to each other.
-  Plain `{ l, a, b }` objects are still accepted by either.
+  Plain `{ l, a, b }` objects are still accepted by either. `deltaE76`,
+  `deltaE94` and `deltaE2000` accept `LabD65` or `LabD50`, but both arguments
+  must use the same illuminant. The brands are a type-only property under a
+  `unique symbol` key, so generic code that requires every key of `LabD65` to
+  be a number may need to skip symbol keys.
 - **Breaking (types):** LCH is branded the same way. `Lch` is now an alias for
   the new `LchD65`, and `lchD502css` takes the new `LchD50`, so the common
   mistake `lchD502css(lab2lch(rgb2lab(rgb)))`, which printed D65 values as CSS
   `lch()` and gave a visibly different colour, no longer compiles. Use
   `lchD502css(labD502lch(rgb2labD50(rgb)))`.
-- `deltaE76`, `deltaE94` and `deltaE2000` accept `LabD65` or `LabD50`, but both
-  arguments must use the same illuminant.
-- The brands are a type-only property under a `unique symbol` key. Generic code
-  that requires every key of `LabD65` to be a number may need to skip symbol
-  keys.
-- `rgb2labD50` and `labD502rgb` now match CSS `lab()` exactly, and so do the
-  `lab()`/`lch()` strings built from them with `labD502css`, `labD502lch` and
-  `lchD502css`. They use the CSS Color 4 constants:
-  D50 white from the chromaticity x=0.3457, y=0.3585 (X=96.4296, Z=82.5105,
-  where 1.x used 96.422 and 82.521), and the spec's sRGB and Bradford matrices.
-  Results move by up to 0.016 Lab units (up to 0.54 per channel back in RGB)
-  and now agree with the CSS reference code to within 1e-12. D65 Lab is
+- **Breaking (output):** `rgb2labD50` and `labD502rgb` now match CSS `lab()`
+  exactly, and so do the `lab()`/`lch()` strings built from them with
+  `labD502css`, `labD502lch` and `lchD502css`. They use the CSS Color 4
+  constants: D50 white from the chromaticity x=0.3457, y=0.3585 (X=96.4296,
+  Z=82.5105, where 1.x used 96.422 and 82.521), and the spec's sRGB and Bradford
+  matrices. Results move by up to 0.016 Lab units (up to 0.54 per channel back
+  in RGB) and now agree with the CSS reference code to within 1e-12. D65 Lab is
   unchanged.
+- **Breaking (output):** `rgb2css` and `hsl2css` use the CSS Color 4
+  space-separated syntax, like the other `*2css` functions, with or without
+  `alpha`: `rgb(128 64 192)`, `rgb(128 64 192 / 0.5)`,
+  `hsl(26.09deg 51.57% 43.73%)` and `hsl(26.09deg 51.57% 43.73% / 0.5)` instead
+  of `rgb(128,64,192)`, `rgba(128,64,192,0.5)`, `hsl(26.09deg,51.57%,43.73%)`
+  and `hsla(26.09deg,51.57%,43.73%,0.5)`. Both forms are valid CSS. Update any
+  code that parses or compares these strings. `rgb2str` still returns
+  `"r,g,b"` by default.
+- **Breaking (output):** `roundTo` rounds halves away from zero, so negative
+  values mirror positive ones: `roundTo(-1.005, 2)` is now `-1.01` (was `-1`)
+  and `roundTo(-2.5, 0)` is `-3` (was `-2`). This also affects negative values
+  printed by the `*2css` functions, such as Lab `a`/`b` in `labD502css`.
 - Oklab uses the CSS Color 4 matrices (Ottosson's, as revised for CSS) with
   exact inverses. Oklab values move by at most 4e-8; white is now exactly
   `L = 1` (was 0.9999999935) and grays have `a`, `b` within 1e-15 of zero (was
@@ -61,6 +62,10 @@ only in the git history.
   `hsl2hsv(rgb2hsl(rgb))`, which gives the same result).
 - `labD502lch` and `lch2labD50`, with the `LchD50` and `LchD65` types, for CSS
   `lch()` values.
+
+### Removed
+
+- **Breaking:** `rgba2css`, deprecated in 1.2.0. Use `rgb2css(rgb, alpha)`.
 
 ## [1.2.0] - 2026-10-28
 

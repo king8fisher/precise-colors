@@ -44,7 +44,6 @@ import {
   Rgb,
   rgb2cmyk,
   rgb2css,
-  rgba2css,
   rgb2hex,
   rgb2str,
   rgb2hsl,
@@ -318,7 +317,6 @@ test("*2css - optional alpha", () => {
   expect(rgb2css(rgb, 0.456)).toBe("rgb(128 64 192 / 0.46)");
   expect(rgb2css(rgb, 1)).toBe("rgb(128 64 192 / 1)");
   expect(rgb2css(rgb, 0)).toBe("rgb(128 64 192 / 0)");
-  expect(rgba2css(rgb, 0.456)).toBe(rgb2css(rgb, 0.456)); // deprecated alias, same output
   const hsl = { h: 26.094, s: 51.574, l: 43.725 };
   expect(hsl2css(hsl)).toBe("hsl(26.09deg 51.57% 43.73%)");
   expect(hsl2css(hsl, 0.5)).toBe("hsl(26.09deg 51.57% 43.73% / 0.5)");
